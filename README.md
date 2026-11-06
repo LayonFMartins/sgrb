@@ -22,7 +22,7 @@ As principais tecnologias escolhidas para desenvolver o sistema foram:
 
 O SGRB utiliza o PostgreSQL como Sistema Gerenciador de Banco de Dados Relacional (SGBD), com hospedagem na plataforma [Neon](https://neon.com/).
 
-A comunicação com o banco de dados é realizada pelo backend utilizando a biblioteca `pg` [[node-postgres](https://node-postgres.com/)] para estabelecer a conexão e executar comandos os comandos SQL.
+A comunicação com o banco de dados é realizada pelo backend utilizando a biblioteca `pg` [[node-postgres](https://node-postgres.com/)] para estabelecer a conexão e executar os comandos SQL.
 
 As credenciais de acesso são armazenadas em variáveis de ambiente, evitando sua exposição no código-fonte.
 
