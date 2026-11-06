@@ -1,4 +1,4 @@
-## Sistema para Gestão e Rastreabilidade de Rebanho Bovino de Corte 🐮
+## Sistema para Gestão e Rastreabilidade de Rebanho Bovino de Corte
 
 ### Sobre o projeto 
 
