@@ -1,0 +1,17 @@
+{
+  "name": "sgrb",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "lint:frontend": "npm run lint --workspace=frontend"
+  }
+}
