@@ -115,3 +115,12 @@ Abra o terminal na pasta raiz do projeto.
    ```
 
 3. Em seguida `npm run dev:frontend` e `npm run dev:backend` em dois terminais **separados**.
+
+## Dicas para o desenvolvimento com Git 
+
+Foi criada uma branch develop, para buscá-la em seu repositório local execute: 
+
+ ```bash
+   git fetch origin
+   git switch develop
+   ```
