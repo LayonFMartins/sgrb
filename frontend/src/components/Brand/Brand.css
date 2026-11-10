@@ -1,0 +1,13 @@
+.brand__identity { display: flex; align-items: center; gap: 24px; }
+.brand__identity img { flex-shrink: 0; }
+.brand__name { font-family: var(--font-brand); font-size: clamp(72px, 8.34vw, 120px); color: var(--color-primary); line-height: 1.2; }
+.brand__accent { display: block; width: 54px; height: 3px; margin: 24px 0 28px 16px; background: var(--color-accent); border-radius: 2px; }
+.brand__description { max-width: 438px; margin-left: 16px; font-size: 19px; line-height: 1.5; }
+.brand--compact { text-align: center; }
+.brand--compact .brand__identity { justify-content: center; }
+.brand--compact .brand__name { font-size: 34px; }
+.brand--compact .brand__description { margin: 10px 0 0; font-size: 9px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--color-secondary); }
+.brand--compact .brand__accent { margin: 22px auto 0; width: 40px; }
+.brand--compact { display: flex; flex-direction: column; }
+.brand--compact .brand__description { order: 1; }
+.brand--compact .brand__accent { order: 2; }

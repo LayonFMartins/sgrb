@@ -9,13 +9,13 @@ export const authRouter = Router();
 // POST /api/auth/login  { email, senha }
 authRouter.post('/login', async (req, res) => {
   const { email, senha } = req.body ?? {};
-  if (!email || !senha) throw new ErroHttp(400, 'Informe e-mail e senha.');
+  if (typeof email !== 'string' || typeof senha !== 'string' || !email.trim() || !senha) throw new ErroHttp(400, 'Informe e-mail e senha.');
 
   const { rows } = await pool.query(
     `SELECT id_usuario, nome, tipo, senha_hash, ativo
        FROM usuario
       WHERE lower(email) = lower($1)`,
-    [email]
+    [email.trim()]
   );
   const usuario = rows[0];
 
