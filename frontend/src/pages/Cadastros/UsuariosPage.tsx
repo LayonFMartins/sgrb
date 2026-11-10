@@ -13,7 +13,7 @@ import { enviar } from '../../utils/enviar'
 
 const VAZIO = { nome: '', funcao: '', tipo: 'FUNCIONARIO', acesso: false, email: '', senha: '' }
 
-// Funcionários e proprietários. Usuário não é excluído (aparece no histórico
+// Usuários: funcionários e proprietários. Usuário não é excluído (aparece no histórico
 // de pesagens e aplicações): é desativado.
 export function UsuariosPage() {
   const { dados, ...estado } = useDados<UsuarioCadastro[]>('/usuarios')
@@ -77,12 +77,12 @@ export function UsuariosPage() {
   }
 
   return <>
-    <CabecalhoCadastro titulo="Funcionários" descricao="Pessoas que acessam o sistema ou são responsáveis pelos manejos."
+    <CabecalhoCadastro titulo="Usuários" descricao="Pessoas que acessam o sistema ou são responsáveis pelos manejos."
       acao={!form.aberto && <Can permissao="usuarios.criar">
-        <button type="button" className="botao-novo" onClick={form.abrirNovo}><Plus size={18} aria-hidden="true" />Novo funcionário</button>
+        <button type="button" className="botao-novo" onClick={form.abrirNovo}><Plus size={18} aria-hidden="true" />Novo usuário</button>
       </Can>} />
 
-    {form.aberto && <FormularioCadastro titulo={form.editando ? 'Editar funcionário' : 'Novo funcionário'}
+    {form.aberto && <FormularioCadastro titulo={form.editando ? 'Editar usuário' : 'Novo usuário'}
       salvando={form.salvando} erro={form.erro} onSalvar={salvar} onCancelar={form.fechar}>
       <Input label="Nome" value={f.nome} maxLength={100} required autoFocus
         onChange={e => form.alterar('nome', e.target.value)} />
@@ -109,11 +109,11 @@ export function UsuariosPage() {
       </p>}
     </FormularioCadastro>}
 
-    <section className="content-card" aria-label="Lista de funcionários">
+    <section className="content-card" aria-label="Lista de usuários">
       <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
       <EstadoDados {...estado}>
-        {dados && <Tabela legenda="Funcionários" colunas={colunas} linhas={dados}
-          chave={u => String(u.id_usuario)} vazio="Nenhum funcionário cadastrado." />}
+        {dados && <Tabela legenda="Usuários" colunas={colunas} linhas={dados}
+          chave={u => String(u.id_usuario)} vazio="Nenhum usuário cadastrado." />}
       </EstadoDados>
     </section>
   </>
