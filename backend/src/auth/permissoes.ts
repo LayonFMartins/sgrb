@@ -4,6 +4,10 @@ export const permissoesConhecidas = [
   'animais.visualizar', 'animais.criar', 'animais.editar', 'animais.excluir',
   'racas.visualizar', 'racas.criar', 'racas.editar', 'racas.excluir',
   'compras.criar',
+  'fornecedores.visualizar', 'fornecedores.criar', 'fornecedores.editar', 'fornecedores.excluir',
+  'piquetes.visualizar', 'piquetes.criar', 'piquetes.editar', 'piquetes.excluir',
+  'produtos.visualizar', 'produtos.criar', 'produtos.editar', 'produtos.excluir',
+  'usuarios.visualizar', 'usuarios.criar', 'usuarios.editar', 'usuarios.desativar',
 ] as const;
 
 export type Permissao = typeof permissoesConhecidas[number];
@@ -16,8 +20,16 @@ const permissoesPorPerfil: Record<TipoUsuario, readonly Permissao[]> = {
     'animais.visualizar', 'animais.criar', 'animais.editar', 'animais.excluir',
     'racas.visualizar', 'racas.criar', 'racas.editar', 'racas.excluir',
     'compras.criar',
+    'fornecedores.visualizar', 'fornecedores.criar', 'fornecedores.editar', 'fornecedores.excluir',
+    'piquetes.visualizar', 'piquetes.criar', 'piquetes.editar', 'piquetes.excluir',
+    'produtos.visualizar', 'produtos.criar', 'produtos.editar', 'produtos.excluir',
+    'usuarios.visualizar', 'usuarios.criar', 'usuarios.editar', 'usuarios.desativar',
   ],
-  FUNCIONARIO: ['inicio.visualizar', 'animais.visualizar', 'racas.visualizar'],
+  // Funcionario so consulta: as listas abastecem os formularios de manejo.
+  FUNCIONARIO: [
+    'inicio.visualizar', 'animais.visualizar', 'racas.visualizar',
+    'fornecedores.visualizar', 'piquetes.visualizar', 'produtos.visualizar', 'usuarios.visualizar',
+  ],
 };
 
 export function obterPermissoes(tipo: string): Permissao[] {
