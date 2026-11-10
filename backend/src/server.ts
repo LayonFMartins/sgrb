@@ -8,6 +8,7 @@ import { authRouter } from './routes/auth.js';
 import { racasRouter } from './routes/racas.js';
 import { animaisRouter } from './routes/animais.js';
 import { comprasRouter } from './routes/compras.js';
+import { consultasRouter } from './routes/consultas.js';
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api', autenticar);
 app.use('/api/racas', racasRouter);
 app.use('/api/animais', animaisRouter);
 app.use('/api/compras', comprasRouter);
+app.use('/api/consultas', consultasRouter);
 
 // Tratamento de erros: sempre por ultimo
 app.use(tratarErros);

@@ -4,6 +4,7 @@ export const permissoesConhecidas = [
   'animais.visualizar', 'animais.criar', 'animais.editar', 'animais.excluir',
   'racas.visualizar', 'racas.criar', 'racas.editar', 'racas.excluir',
   'compras.criar',
+  'consultas.visualizar',
 ] as const;
 
 export type Permissao = typeof permissoesConhecidas[number];
@@ -16,8 +17,9 @@ const permissoesPorPerfil: Record<TipoUsuario, readonly Permissao[]> = {
     'animais.visualizar', 'animais.criar', 'animais.editar', 'animais.excluir',
     'racas.visualizar', 'racas.criar', 'racas.editar', 'racas.excluir',
     'compras.criar',
+    'consultas.visualizar',
   ],
-  FUNCIONARIO: ['inicio.visualizar', 'animais.visualizar', 'racas.visualizar'],
+  FUNCIONARIO: ['inicio.visualizar', 'animais.visualizar', 'racas.visualizar', 'consultas.visualizar'],
 };
 
 export function obterPermissoes(tipo: string): Permissao[] {

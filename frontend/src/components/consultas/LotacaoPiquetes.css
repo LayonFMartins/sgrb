@@ -1,0 +1,18 @@
+.lotacao { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-family: var(--font-functional); }
+.lotacao__item { display: grid; grid-template-columns: minmax(150px, 1.2fr) minmax(120px, 2fr) 64px minmax(150px, auto); align-items: center; gap: 16px; padding: 12px 4px; border-top: 1px solid var(--border-default); }
+.lotacao__item:first-child { border-top: 0; }
+.lotacao__nome { display: grid; gap: 2px; font-size: 14px; }
+.lotacao__nome span { font-size: 12px; color: var(--color-text-secondary); }
+.lotacao__barra { height: 10px; border-radius: 5px; background: #eef1ea; overflow: hidden; }
+.lotacao__preenchido { display: block; height: 100%; border-radius: 5px; }
+.lotacao__preenchido--normal { background: var(--color-secondary); }
+.lotacao__preenchido--alto { background: var(--color-accent); }
+.lotacao__preenchido--cheio { background: var(--status-error); }
+.lotacao__numeros { font-size: 14px; font-variant-numeric: tabular-nums; text-align: right; color: var(--color-text-secondary); }
+.lotacao__item .etiqueta { justify-self: start; }
+
+@media (max-width: 700px) {
+  .lotacao__item { grid-template-columns: 1fr auto; row-gap: 8px; }
+  .lotacao__barra { grid-column: 1 / -1; grid-row: 2; }
+  .lotacao__item .etiqueta { grid-column: 1 / -1; }
+}
