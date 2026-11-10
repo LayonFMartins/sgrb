@@ -2,6 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import { pool } from './db/pool.js';
+import { autenticar } from './middleware/auth.js';
+import { tratarErros } from './middleware/erros.js';
+import { authRouter } from './routes/auth.js';
+import { racasRouter } from './routes/racas.js';
+import { animaisRouter } from './routes/animais.js';
+import { comprasRouter } from './routes/compras.js';
 
 const app = express();
 
@@ -42,6 +48,18 @@ app.get('/api/health/database', async (_req, res) => {
     });
   }
 });
+
+// Login (rota publica)
+app.use('/api/auth', authRouter);
+
+// Daqui para baixo, todas as rotas exigem login
+app.use('/api', autenticar);
+app.use('/api/racas', racasRouter);
+app.use('/api/animais', animaisRouter);
+app.use('/api/compras', comprasRouter);
+
+// Tratamento de erros: sempre por ultimo
+app.use(tratarErros);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);

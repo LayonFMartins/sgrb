@@ -1,0 +1,85 @@
+### Testes da API do SGRB
+### Use com a extensao "REST Client" do VS Code: clique em "Send Request"
+### acima de cada requisicao. O backend precisa estar rodando (npm run dev:backend).
+
+@api = http://localhost:3000/api
+@tokenP = {{loginProprietario.response.body.token}}
+@tokenF = {{loginFuncionario.response.body.token}}
+
+### 1. Banco conectado?
+GET {{api}}/health/database
+
+### 2. Login do proprietario (o token e guardado automaticamente)
+# @name loginProprietario
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "proprietario@example.com", "senha": "sgrb123" }
+
+### 3. Login da funcionaria
+# @name loginFuncionario
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "senha": "sgrb123" }
+
+### 4. Rebanho ativo
+GET {{api}}/animais?situacao=Ativo
+Authorization: Bearer {{tokenF}}
+
+### 5. Ficha completa do animal (dados + linha do tempo)
+GET {{api}}/animais/0101
+Authorization: Bearer {{tokenF}}
+
+### 6. Crias de uma matriz
+GET {{api}}/animais/0001/crias
+Authorization: Bearer {{tokenF}}
+
+### 7. Racas
+GET {{api}}/racas
+Authorization: Bearer {{tokenF}}
+
+### 8. Funcionaria tentando cadastrar raca (deve dar 403)
+POST {{api}}/racas
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "nome": "Gir" }
+
+### 9. Proprietario cadastra raca
+POST {{api}}/racas
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome": "Gir" }
+
+### 10. Nascimento com mae macho (o banco recusa: RI-02)
+POST {{api}}/animais
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "brinco": "0301", "sexo": "F", "data_nascimento": "2026-11-01", "id_raca": 1, "brinco_mae": "0101" }
+
+### 11. Excluir uma mae que tem crias (o banco recusa)
+DELETE {{api}}/animais/0001
+Authorization: Bearer {{tokenP}}
+
+### 12. Compra com GTA de entrada (transacao)
+POST {{api}}/compras
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{
+  "id_fornecedor": 1,
+  "data_compra": "2026-11-05",
+  "gta": {
+    "numero_gta": "MG-26-0040001",
+    "data_emissao": "2026-11-04",
+    "origem": "Fazenda Santa Luzia - Uberaba/MG",
+    "destino": "Fazenda São Bento - Itabira/MG",
+    "finalidade": "RECRIA"
+  },
+  "animais": [
+    { "brinco": "0401", "sexo": "M", "data_nascimento": "2025-10-01", "id_raca": 1, "valor_compra": 2900 }
+  ]
+}
