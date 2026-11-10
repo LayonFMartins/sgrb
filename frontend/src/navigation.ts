@@ -40,7 +40,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
   { id: 'cadastros', label: 'Cadastros', items: [
     { path: '/fornecedores', label: 'Fornecedores', icon: Contact, permissao: 'fornecedores.visualizar', pagina: FornecedoresPage },
     { path: '/produtos-sanitarios', label: 'Produtos sanitários', icon: Pill, permissao: 'produtos.visualizar', pagina: ProdutosPage },
-    { path: '/funcionarios', label: 'Funcionários', icon: Users, permissao: 'usuarios.visualizar', pagina: UsuariosPage },
+    { path: '/usuarios', label: 'Usuários', icon: Users, permissao: 'usuarios.visualizar', pagina: UsuariosPage },
     { path: '/racas', label: 'Raças', icon: Tags, permissao: 'racas.visualizar' },
   ] },
   { id: 'analises', label: 'Análises', items: [
