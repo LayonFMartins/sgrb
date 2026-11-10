@@ -80,8 +80,9 @@ Para o banco de dados vamos usar a credencial de conexão da plataforma Neon.
  1. Execute: `npm.cmd ci`
  2. Copie o .env: `Copy-Item backend/.env.example backend/.env`
  3. Abra `backend/.env` no editor e preencha `DATABASE_URL` com a credencial de desenvolvimento autorizada do Banco de Dados hospedado na Neon.
- 4. Em seguida `npm.cmd run dev:frontend` e `npm.cmd run dev:backend` em dois terminais **separados**.
- 5. Teste `http://localhost:5173` e `http://localhost:3000/api/health/database` 
+ 4. Configure também o `JWT_SECRET` conforme a seção [Configuração do JWT](#configuração-do-jwt).
+ 5. Em seguida `npm.cmd run dev:frontend` e `npm.cmd run dev:backend` em dois terminais **separados**.
+ 6. Teste `http://localhost:5173` e `http://localhost:3000/api/health/database`
 
 ### Linux:
 Abra o terminal na pasta raiz do projeto. 
@@ -89,5 +90,30 @@ Abra o terminal na pasta raiz do projeto.
  1. Execute: `npm ci`
  2. Copie o .env: `cp backend/.env.example backend/.env`
  3. Abra `backend/.env` no editor e preencha `DATABASE_URL` com a credencial de desenvolvimento autorizada do Banco de Dados hospedado na Neon.
- 4. Em seguida `npm run dev:frontend` e `npm run dev:backend` em dois terminais **separados**.
- 5. Teste `http://localhost:5173` e `http://localhost:3000/api/health/database`
+ 4. Configure também o `JWT_SECRET` conforme a seção [Configuração do JWT](#configuração-do-jwt).
+ 5. Em seguida `npm run dev:frontend` e `npm run dev:backend` em dois terminais **separados**.
+ 6. Teste `http://localhost:5173` e `http://localhost:3000/api/health/database`
+
+## Configuração do JWT
+
+1. Gere uma chave aleatória de 32 bytes no terminal. No Linux, execute:
+
+   ```bash
+   node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+   ```
+
+   No PowerShell do Windows:
+
+   ```bash
+   node.exe -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+   ```
+
+2. No seu `backend/.env`, defina `JWT_SECRET` com o valor gerado:
+
+   ```dotenv
+   JWT_SECRET=
+   ```
+
+3. Em seguida `npm run dev:frontend` e `npm run dev:backend` em dois terminais **separados**.
+
+

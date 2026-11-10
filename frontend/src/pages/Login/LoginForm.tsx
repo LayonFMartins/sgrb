@@ -2,19 +2,22 @@ import { useState, type FormEvent } from 'react'
 import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { salvarToken, solicitar, type Usuario } from '../../auth/auth'
 
 interface LoginErrors {
   email?: string
   password?: string
 }
 
-export function LoginForm() {
+export function LoginForm({ onLogin }: { onLogin: (token: string, usuario: Usuario) => void }) {
+  const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<LoginErrors>({})
   const [notice, setNotice] = useState('')
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (loading) return
     const form = event.currentTarget
     const data = new FormData(form)
     const email = String(data.get('email') ?? '').trim()
@@ -35,7 +38,20 @@ export function LoginForm() {
       return
     }
 
-    setNotice('O acesso ainda não está disponível. A integração com a autenticação será adicionada em breve.')
+    setLoading(true)
+    try {
+      const { token, usuario } = await solicitar<{ token: string; usuario: Usuario }>('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha: password }),
+      })
+      salvarToken(token, data.get('remember') === 'on')
+      onLogin(token, usuario)
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Não foi possível entrar. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -51,7 +67,7 @@ export function LoginForm() {
           <label className="login-form__remember"><input type="checkbox" name="remember" />Manter conectado</label>
           <button className="text-button" type="button" onClick={() => setNotice('A recuperação de senha ainda não está disponível nesta versão.')}>Esqueceu a senha?</button>
         </div>
-        <Button type="submit">Entrar</Button>
+        <Button type="submit" loading={loading}>{loading ? 'Entrando…' : 'Entrar'}</Button>
       </form>
       <footer className="login-card__support">
         <p>Precisa de ajuda?</p>

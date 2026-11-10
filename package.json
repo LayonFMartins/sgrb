@@ -12,10 +12,13 @@
   "scripts": {
     "dev:frontend": "npm run dev --workspace=frontend",
     "build:frontend": "npm run build --workspace=frontend",
-    "lint:frontend": "npm run lint --workspace=frontend", 
+    "lint:frontend": "npm run lint --workspace=frontend",
     "dev:backend": "npm run dev --workspace=backend",
     "build:backend": "npm run build --workspace=backend",
     "start:backend": "npm run start --workspace=backend",
     "typecheck:backend": "npm run typecheck --workspace=backend"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
   }
 }
