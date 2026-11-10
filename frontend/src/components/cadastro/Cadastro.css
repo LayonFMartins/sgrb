@@ -1,0 +1,42 @@
+/* Telas de cadastro: fornecedores, piquetes, produtos sanitários e funcionários */
+
+.cadastro-cabecalho { grid-template-columns: 1fr auto; align-items: end; }
+.cadastro-cabecalho > div { display: grid; gap: 12px; }
+@media (max-width: 640px) { .cadastro-cabecalho { grid-template-columns: 1fr; } }
+
+.botao-novo { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 18px; border: 0; border-radius: var(--radius-control); background: var(--color-button); color: var(--color-surface); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.botao-novo:hover { background: var(--color-button-hover); }
+
+.botao-secundario { min-height: 50px; padding: 12px 20px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font-size: 14px; font-weight: 600; }
+.botao-secundario:hover:not(:disabled) { background: var(--color-background); }
+
+.cadastro-form { margin-bottom: 24px; }
+.cadastro-form form { display: grid; gap: 20px; }
+.cadastro-form__campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px 20px; }
+.cadastro-form__campo-largo { grid-column: 1 / -1; }
+.cadastro-form__erro { padding: 12px 14px; border: 1px solid #e6b8b2; border-radius: var(--radius-control); background: #fbf1ef; color: var(--status-error); font-size: 14px; }
+.cadastro-form__botoes { display: flex; justify-content: flex-end; gap: 12px; }
+.cadastro-form__salvar { width: auto; min-width: 140px; }
+.cadastro-form__dica { color: var(--color-text-secondary); font-size: 13px; }
+
+.cadastro-select { width: 100%; min-width: 0; padding: 14px 12px; border: 0; outline: none; background: transparent; color: var(--color-text); font-size: 14px; }
+
+.cadastro-checkbox { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+.cadastro-checkbox input { width: 18px; height: 18px; accent-color: var(--color-primary); }
+
+.cadastro-telefones { display: grid; gap: 10px; max-width: 520px; }
+.cadastro-telefones__linha { display: flex; gap: 8px; align-items: end; }
+.cadastro-telefones__linha .field { flex: 1; }
+
+.cadastro-aviso { margin-bottom: 16px; }
+.cadastro-filtros { margin-bottom: 16px; }
+
+.acoes-linha { display: flex; gap: 6px; justify-content: flex-end; }
+.acao-linha { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid var(--border-default); border-radius: 6px; background: var(--color-surface); color: var(--color-primary); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.acao-linha:hover:not(:disabled) { background: var(--sidebar-hover); }
+.acao-linha:disabled { opacity: .55; }
+.acao-linha--perigo { color: var(--status-error); }
+.acao-linha--perigo:hover:not(:disabled) { background: #fbf1ef; }
+.acao-icone { min-height: 50px; padding: 0 14px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); color: var(--status-error); }
+
+.texto-secundario { color: var(--color-text-secondary); font-size: 13px; }

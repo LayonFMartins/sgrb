@@ -83,3 +83,89 @@ Content-Type: application/json
     { "brinco": "0401", "sexo": "M", "data_nascimento": "2025-10-01", "id_raca": 1, "valor_compra": 2900 }
   ]
 }
+
+### ===== Cadastros: fornecedores, piquetes, produtos e usuarios =====
+
+### 13. Listas usadas nos formularios de manejo (funcionario pode ver)
+GET {{api}}/fornecedores
+Authorization: Bearer {{tokenF}}
+
+###
+GET {{api}}/piquetes
+Authorization: Bearer {{tokenF}}
+
+###
+GET {{api}}/piquetes?situacao=Disponível
+Authorization: Bearer {{tokenF}}
+
+###
+GET {{api}}/produtos?tipo=VACINA
+Authorization: Bearer {{tokenF}}
+
+###
+GET {{api}}/usuarios?ativo=true
+Authorization: Bearer {{tokenF}}
+
+### 14. Piquete com os animais que estao nele
+GET {{api}}/piquetes/1
+Authorization: Bearer {{tokenF}}
+
+### 15. Fornecedor com telefones
+POST {{api}}/fornecedores
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome_produtor": "Antônio Carlos Silva", "nome_propriedade": "Sítio Boa Vista",
+  "municipio": "Alvinópolis", "uf": "MG", "telefones": ["(31) 99999-0000", "(31) 3855-1234"] }
+
+### 16. Piquete novo
+POST {{api}}/piquetes
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome": "P07 - Morro", "area_ha": 12.5, "capacidade_max": 30, "descanso_min_dias": 28 }
+
+### 17. Reduzir capacidade abaixo da lotacao (o banco recusa: RI-09)
+PUT {{api}}/piquetes/1
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome": "P01 - Baixada", "area_ha": 14.5, "capacidade_max": 1, "descanso_min_dias": 28 }
+
+### 18. Produto sanitario
+POST {{api}}/produtos
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome": "Vermífugo Ivermectina 1%", "tipo": "VERMIFUGO", "doenca_alvo": "Verminose",
+  "carencia_dias": 35, "num_doses": 1 }
+
+### 19. Usuario com login (a senha e gravada como hash bcrypt)
+POST {{api}}/usuarios
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome": "Lucas Martins", "funcao": "Vaqueiro", "tipo": "FUNCIONARIO",
+  "email": "lucas@example.com", "senha": "sgrb123" }
+
+### 20. Usuario sem login (so responsavel pelos manejos)
+POST {{api}}/usuarios
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome": "Sebastião Dias", "funcao": "Vaqueiro", "tipo": "FUNCIONARIO" }
+
+### 21. Desativar usuario (Ana, id 3) e reativar
+PATCH {{api}}/usuarios/3/desativar
+Authorization: Bearer {{tokenP}}
+
+###
+PATCH {{api}}/usuarios/3/ativar
+Authorization: Bearer {{tokenP}}
+
+### 22. Funcionario tentando cadastrar (403)
+POST {{api}}/piquetes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "nome": "P99", "area_ha": 1, "capacidade_max": 1, "descanso_min_dias": 0 }

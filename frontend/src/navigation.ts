@@ -3,6 +3,10 @@ import type { LucideIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
 import type { Permissao } from './auth/permissions'
 import { RelatoriosPage } from './pages/Relatorios/RelatoriosPage'
+import { FornecedoresPage } from './pages/Cadastros/FornecedoresPage'
+import { PiquetesPage } from './pages/Cadastros/PiquetesPage'
+import { ProdutosPage } from './pages/Cadastros/ProdutosPage'
+import { UsuariosPage } from './pages/Cadastros/UsuariosPage'
 
 interface NavigationItemBase {
   path: string
@@ -25,7 +29,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/animais', label: 'Animais', icon: 'boi', permissao: 'animais.visualizar' },
     { path: '/pesagens', label: 'Pesagens', icon: Weight, futuro: true },
     { path: '/manejo-sanitario', label: 'Manejo sanitário', icon: Syringe, futuro: true },
-    { path: '/piquetes', label: 'Piquetes', icon: Map, futuro: true },
+    { path: '/piquetes', label: 'Piquetes', icon: Map, permissao: 'piquetes.visualizar', pagina: PiquetesPage },
     { path: '/movimentacoes', label: 'Movimentações', icon: ArrowLeftRight, futuro: true },
   ] },
   { id: 'operacoes', label: 'Operações', items: [
@@ -34,9 +38,9 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/gta', label: 'Guias de trânsito (GTA)', icon: FileText, futuro: true },
   ] },
   { id: 'cadastros', label: 'Cadastros', items: [
-    { path: '/fornecedores', label: 'Fornecedores', icon: Contact, futuro: true },
-    { path: '/produtos-sanitarios', label: 'Produtos sanitários', icon: Pill, futuro: true },
-    { path: '/funcionarios', label: 'Funcionários', icon: Users, futuro: true },
+    { path: '/fornecedores', label: 'Fornecedores', icon: Contact, permissao: 'fornecedores.visualizar', pagina: FornecedoresPage },
+    { path: '/produtos-sanitarios', label: 'Produtos sanitários', icon: Pill, permissao: 'produtos.visualizar', pagina: ProdutosPage },
+    { path: '/usuarios', label: 'Usuários', icon: Users, permissao: 'usuarios.visualizar', pagina: UsuariosPage },
     { path: '/racas', label: 'Raças', icon: Tags, permissao: 'racas.visualizar' },
   ] },
   { id: 'analises', label: 'Análises', items: [
