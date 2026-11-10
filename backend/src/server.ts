@@ -8,6 +8,10 @@ import { authRouter } from './routes/auth.js';
 import { racasRouter } from './routes/racas.js';
 import { animaisRouter } from './routes/animais.js';
 import { comprasRouter } from './routes/compras.js';
+import { fornecedoresRouter } from './routes/fornecedores.js';
+import { piquetesRouter } from './routes/piquetes.js';
+import { produtosRouter } from './routes/produtos.js';
+import { usuariosRouter } from './routes/usuarios.js';
 
 const app = express();
 
@@ -57,6 +61,10 @@ app.use('/api', autenticar);
 app.use('/api/racas', racasRouter);
 app.use('/api/animais', animaisRouter);
 app.use('/api/compras', comprasRouter);
+app.use('/api/fornecedores', fornecedoresRouter);
+app.use('/api/piquetes', piquetesRouter);
+app.use('/api/produtos', produtosRouter);
+app.use('/api/usuarios', usuariosRouter);
 
 // Tratamento de erros: sempre por ultimo
 app.use(tratarErros);
