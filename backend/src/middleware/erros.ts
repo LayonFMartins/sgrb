@@ -20,6 +20,20 @@ const MENSAGENS_CONSTRAINT: Record<string, string> = {
   ck_produto_faixa: 'RI-12: a idade máxima não pode ser menor que a mínima.',
   ck_usuario_login: 'RI-23: informe e-mail e senha juntos.',
   ck_usuario_senha_hash: 'RI-24: a senha precisa ser gravada como hash.',
+  ck_fornecedor_uf: 'UF inválida. Use a sigla do estado (ex.: MG).',
+  pk_telefone_fornecedor: 'Telefone repetido para o mesmo fornecedor.',
+  ck_piquete_area: 'A área do piquete deve ser maior que zero.',
+  ck_piquete_capacidade: 'A capacidade do piquete deve ser maior que zero.',
+  ck_piquete_descanso: 'O descanso mínimo não pode ser negativo.',
+  ck_produto_tipo: 'Tipo deve ser VACINA, VERMIFUGO ou ANTIBIOTICO.',
+  ck_produto_carencia: 'A carência não pode ser negativa.',
+  ck_produto_doses: 'O produto precisa ter pelo menos 1 dose.',
+  ck_produto_intervalo: 'O intervalo de reforço deve ser maior que zero.',
+  ck_produto_sexo: 'Sexo alvo deve ser M, F ou vazio.',
+  ck_produto_idade_min: 'A idade mínima não pode ser negativa.',
+  ck_produto_idade_max: 'A idade máxima não pode ser negativa.',
+  ck_usuario_tipo: 'Tipo deve ser PROPRIETARIO ou FUNCIONARIO.',
+  ck_usuario_email: 'E-mail inválido.',
   uk_usuario_email: 'Já existe um usuário com esse e-mail.',
   uk_raca_nome: 'Já existe uma raça com esse nome.',
   uk_piquete_nome: 'Já existe um piquete com esse nome.',
@@ -54,6 +68,8 @@ export function tratarErros(erro: unknown, _req: Request, res: Response, _next: 
     case '22P02': // valor em formato invalido
     case '22007': // data invalida
     case '22008':
+    case '22001': // texto maior que o tamanho da coluna
+    case '22003': // numero fora do limite
       return res.status(400).json({ erro: mensagem });
     case '23505': // unique_violation
       return res.status(409).json({ erro: mensagem });
