@@ -1,13 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db/pool.js';
-
-export type TipoUsuario = 'PROPRIETARIO' | 'FUNCIONARIO';
+import { obterPermissoes, temPermissao, type Permissao, type TipoUsuario } from '../auth/permissoes.js';
 
 export interface UsuarioLogado {
   id: number;
   nome: string;
   tipo: TipoUsuario;
+  permissoes: Permissao[];
 }
 
 // Disponibiliza req.usuario nas rotas protegidas.
@@ -25,8 +25,9 @@ function segredo(): string {
   return s;
 }
 
-export function gerarToken(usuario: UsuarioLogado): string {
-  return jwt.sign(usuario, segredo(), { expiresIn: '8h' });
+export function gerarToken(usuario: Pick<UsuarioLogado, 'id' | 'nome' | 'tipo'>): string {
+  const { id, nome, tipo } = usuario;
+  return jwt.sign({ id, nome, tipo }, segredo(), { expiresIn: '8h' });
 }
 
 // Exige login: o front envia o cabecalho "Authorization: Bearer <token>".
@@ -51,17 +52,23 @@ export async function autenticar(req: Request, res: Response, next: NextFunction
     if (!usuario || !usuario.ativo) {
       return res.status(401).json({ erro: 'Sessão encerrada. Faça login novamente.' });
     }
-    req.usuario = { id: usuario.id, nome: usuario.nome, tipo: usuario.tipo };
+    req.usuario = {
+      id: usuario.id, nome: usuario.nome, tipo: usuario.tipo,
+      permissoes: obterPermissoes(usuario.tipo),
+    };
     next();
   } catch (erro) {
     next(erro);
   }
 }
 
-// Restringe a rota a determinados perfis (ex.: so o proprietario).
-export function exigirPerfil(...perfis: TipoUsuario[]) {
+// Sempre depois de autenticar. A autorização vem do perfil atual no banco, não do JWT.
+export function exigirPermissao(permissao: Permissao) {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.usuario || !perfis.includes(req.usuario.tipo)) {
+    if (!req.usuario) {
+      return res.status(401).json({ erro: 'Faça login para continuar.' });
+    }
+    if (!temPermissao(req.usuario.permissoes, permissao)) {
       return res.status(403).json({ erro: 'Seu perfil não tem permissão para esta ação.' });
     }
     next();

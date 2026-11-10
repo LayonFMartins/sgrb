@@ -2,14 +2,14 @@ import { useState, type FormEvent } from 'react'
 import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
-import { salvarToken, solicitar, type Usuario } from '../../auth/auth'
+import { solicitar, type Usuario } from '../../auth/auth'
 
 interface LoginErrors {
   email?: string
   password?: string
 }
 
-export function LoginForm({ onLogin }: { onLogin: (token: string, usuario: Usuario) => void }) {
+export function LoginForm({ onLogin }: { onLogin: (token: string, usuario: Usuario, lembrar: boolean) => void }) {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<LoginErrors>({})
@@ -45,8 +45,7 @@ export function LoginForm({ onLogin }: { onLogin: (token: string, usuario: Usuar
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha: password }),
       })
-      salvarToken(token, data.get('remember') === 'on')
-      onLogin(token, usuario)
+      onLogin(token, usuario, data.get('remember') === 'on')
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'Não foi possível entrar. Tente novamente.')
     } finally {

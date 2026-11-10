@@ -115,5 +115,3 @@ Abra o terminal na pasta raiz do projeto.
    ```
 
 3. Em seguida `npm run dev:frontend` e `npm run dev:backend` em dois terminais **separados**.
-
-

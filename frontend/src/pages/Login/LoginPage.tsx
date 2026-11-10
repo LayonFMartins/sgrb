@@ -3,7 +3,7 @@ import { LoginForm } from './LoginForm'
 import './Login.css'
 import type { Usuario } from '../../auth/auth'
 
-export function LoginPage({ onLogin }: { onLogin: (token: string, usuario: Usuario) => void }) {
+export function LoginPage({ onLogin }: { onLogin: (token: string, usuario: Usuario, lembrar: boolean) => void }) {
   return (
     <main className="login-page">
       <section className="login-page__brand" aria-label="SGRB — Sistema de Gestão e Rastreabilidade de Rebanho Bovino">

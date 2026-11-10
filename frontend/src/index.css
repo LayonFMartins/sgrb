@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Roboto+Slab:wght@600&family=Rye&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@400;500;600&family=Roboto+Slab:wght@600&family=Rye&display=swap');
 
 :root {
   --font-brand: 'Rye', Georgia, serif;
   --font-heading: 'Roboto Slab', Georgia, serif;
   --font-body: 'Manrope', system-ui, sans-serif;
+  --font-functional: 'Inter', system-ui, sans-serif;
   --color-primary: #1f4d3a;
   --color-secondary: #596b42;
   --color-accent: #a16b45;
@@ -11,6 +12,13 @@
   --color-surface: #ffffff;
   --color-text: #303a32;
   --color-muted: #657367;
+  --color-text-secondary: #4d5b50;
+  --sidebar-background: #ffffff;
+  --sidebar-icon: #596b42;
+  --sidebar-caption: #303a32;
+  --sidebar-active: #e1e8dc;
+  --sidebar-hover: #f0f3ed;
+  --sidebar-disabled: #617063;
   --color-button: #654832;
   --color-button-hover: #503824;
   --border-default: #cbd6ca;

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { pool } from '../db/pool.js';
 import { ErroHttp } from '../middleware/erros.js';
 import { autenticar, gerarToken } from '../middleware/auth.js';
+import { obterPermissoes } from '../auth/permissoes.js';
 
 export const authRouter = Router();
 
@@ -25,7 +26,10 @@ authRouter.post('/login', async (req, res) => {
   }
   if (!usuario.ativo) throw new ErroHttp(403, 'Usuário inativo. Procure o proprietário.');
 
-  const dados = { id: usuario.id_usuario, nome: usuario.nome, tipo: usuario.tipo };
+  const dados = {
+    id: usuario.id_usuario, nome: usuario.nome, tipo: usuario.tipo,
+    permissoes: obterPermissoes(usuario.tipo),
+  };
   res.json({ token: gerarToken(dados), usuario: dados });
 });
 

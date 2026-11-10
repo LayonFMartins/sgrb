@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { ErroHttp } from '../middleware/erros.js';
-import { exigirPerfil } from '../middleware/auth.js';
+import { exigirPermissao } from '../middleware/auth.js';
 
 // Modelo de CRUD simples: listar, buscar, cadastrar, editar e excluir.
 export const racasRouter = Router();
 
 // Listar e buscar: qualquer usuario logado
-racasRouter.get('/', async (_req, res) => {
+racasRouter.get('/', exigirPermissao('racas.visualizar'), async (_req, res) => {
   const { rows } = await pool.query(
     `SELECT r.id_raca, r.nome, count(a.brinco)::int AS animais
        FROM raca r
@@ -18,14 +18,14 @@ racasRouter.get('/', async (_req, res) => {
   res.json(rows);
 });
 
-racasRouter.get('/:id', async (req, res) => {
+racasRouter.get('/:id', exigirPermissao('racas.visualizar'), async (req, res) => {
   const { rows } = await pool.query('SELECT id_raca, nome FROM raca WHERE id_raca = $1', [req.params.id]);
   if (!rows[0]) throw new ErroHttp(404, 'Raça não encontrada.');
   res.json(rows[0]);
 });
 
 // Cadastrar, editar e excluir: so o proprietario
-racasRouter.post('/', exigirPerfil('PROPRIETARIO'), async (req, res) => {
+racasRouter.post('/', exigirPermissao('racas.criar'), async (req, res) => {
   const nome = String(req.body?.nome ?? '').trim();
   if (!nome) throw new ErroHttp(400, 'Informe o nome da raça.');
 
@@ -36,7 +36,7 @@ racasRouter.post('/', exigirPerfil('PROPRIETARIO'), async (req, res) => {
   res.status(201).json(rows[0]);
 });
 
-racasRouter.put('/:id', exigirPerfil('PROPRIETARIO'), async (req, res) => {
+racasRouter.put('/:id', exigirPermissao('racas.editar'), async (req, res) => {
   const nome = String(req.body?.nome ?? '').trim();
   if (!nome) throw new ErroHttp(400, 'Informe o nome da raça.');
 
@@ -48,7 +48,7 @@ racasRouter.put('/:id', exigirPerfil('PROPRIETARIO'), async (req, res) => {
   res.json(rows[0]);
 });
 
-racasRouter.delete('/:id', exigirPerfil('PROPRIETARIO'), async (req, res) => {
+racasRouter.delete('/:id', exigirPermissao('racas.excluir'), async (req, res) => {
   // Se houver animais dessa raca, o banco bloqueia (chave estrangeira).
   const { rowCount } = await pool.query('DELETE FROM raca WHERE id_raca = $1', [req.params.id]);
   if (!rowCount) throw new ErroHttp(404, 'Raça não encontrada.');

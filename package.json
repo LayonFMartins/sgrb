@@ -16,7 +16,9 @@
     "dev:backend": "npm run dev --workspace=backend",
     "build:backend": "npm run build --workspace=backend",
     "start:backend": "npm run start --workspace=backend",
-    "typecheck:backend": "npm run typecheck --workspace=backend"
+    "typecheck:backend": "npm run typecheck --workspace=backend",
+    "test:backend": "npm run test --workspace=backend",
+    "test:frontend": "npm run test --workspace=frontend"
   },
   "devDependencies": {
     "typescript": "~6.0.3"

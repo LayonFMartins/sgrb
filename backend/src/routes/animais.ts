@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { ErroHttp } from '../middleware/erros.js';
-import { exigirPerfil } from '../middleware/auth.js';
+import { exigirPermissao } from '../middleware/auth.js';
 
 export const animaisRouter = Router();
 
 // GET /api/animais?situacao=Ativo  -> rebanho com idade, categoria e piquete atual
-animaisRouter.get('/', async (req, res) => {
+animaisRouter.get('/', exigirPermissao('animais.visualizar'), async (req, res) => {
   const situacao = req.query.situacao ? String(req.query.situacao) : null;
   const { rows } = await pool.query(
     `SELECT brinco, sexo, raca, data_nascimento, idade_meses, categoria, origem,
@@ -20,7 +20,7 @@ animaisRouter.get('/', async (req, res) => {
 });
 
 // GET /api/animais/:brinco  -> ficha completa (dados + linha do tempo)
-animaisRouter.get('/:brinco', async (req, res) => {
+animaisRouter.get('/:brinco', exigirPermissao('animais.visualizar'), async (req, res) => {
   const { brinco } = req.params;
   const animal = await pool.query('SELECT * FROM vw_animal WHERE brinco = $1', [brinco]);
   if (!animal.rows[0]) throw new ErroHttp(404, 'Animal não encontrado.');
@@ -36,7 +36,7 @@ animaisRouter.get('/:brinco', async (req, res) => {
 });
 
 // GET /api/animais/:brinco/crias  -> crias de uma matriz
-animaisRouter.get('/:brinco/crias', async (req, res) => {
+animaisRouter.get('/:brinco/crias', exigirPermissao('animais.visualizar'), async (req, res) => {
   const { rows } = await pool.query(
     `SELECT brinco, sexo, data_nascimento, categoria, situacao
        FROM vw_animal
@@ -49,7 +49,7 @@ animaisRouter.get('/:brinco/crias', async (req, res) => {
 
 // POST /api/animais  -> animal nascido na fazenda ou do rebanho inicial.
 // Animal comprado entra pela rota /api/compras, junto com a GTA.
-animaisRouter.post('/', exigirPerfil('PROPRIETARIO'), async (req, res) => {
+animaisRouter.post('/', exigirPermissao('animais.criar'), async (req, res) => {
   const { brinco, sexo, data_nascimento, id_raca, brinco_mae } = req.body ?? {};
   if (!brinco || !sexo || !data_nascimento || !id_raca) {
     throw new ErroHttp(400, 'Informe brinco, sexo, data de nascimento e raça.');
@@ -65,7 +65,7 @@ animaisRouter.post('/', exigirPerfil('PROPRIETARIO'), async (req, res) => {
 });
 
 // PUT /api/animais/:brinco  -> edicao (inclusive correcao do brinco)
-animaisRouter.put('/:brinco', exigirPerfil('PROPRIETARIO'), async (req, res) => {
+animaisRouter.put('/:brinco', exigirPermissao('animais.editar'), async (req, res) => {
   const { brinco, sexo, data_nascimento, id_raca, brinco_mae } = req.body ?? {};
   if (!brinco || !sexo || !data_nascimento || !id_raca) {
     throw new ErroHttp(400, 'Informe brinco, sexo, data de nascimento e raça.');
@@ -84,7 +84,7 @@ animaisRouter.put('/:brinco', exigirPerfil('PROPRIETARIO'), async (req, res) => 
 
 // DELETE /api/animais/:brinco  -> exclui o animal e todo o seu historico.
 // O banco bloqueia se o animal for mae de outros animais.
-animaisRouter.delete('/:brinco', exigirPerfil('PROPRIETARIO'), async (req, res) => {
+animaisRouter.delete('/:brinco', exigirPermissao('animais.excluir'), async (req, res) => {
   const { rowCount } = await pool.query('DELETE FROM animal WHERE brinco = $1', [req.params.brinco]);
   if (!rowCount) throw new ErroHttp(404, 'Animal não encontrado.');
   res.status(204).end();

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { emTransacao } from '../db/transacao.js';
 import { ErroHttp } from '../middleware/erros.js';
-import { exigirPerfil } from '../middleware/auth.js';
+import { exigirPermissao } from '../middleware/auth.js';
 
 // Modelo de operacao com TRANSACAO: a compra grava os animais, a GTA de
 // entrada e o vinculo entre eles. O banco so confere a regra RI-06
@@ -26,7 +26,7 @@ interface AnimalComprado {
 //   "animais": [ { "brinco": "0301", "sexo": "M", "data_nascimento": "2025-10-01",
 //                  "id_raca": 1, "valor_compra": 2900 } ]
 // }
-comprasRouter.post('/', exigirPerfil('PROPRIETARIO'), async (req, res) => {
+comprasRouter.post('/', exigirPermissao('compras.criar'), async (req, res) => {
   const { id_fornecedor, data_compra, gta, animais } = req.body ?? {};
   if (!id_fornecedor || !data_compra || !gta?.numero_gta || !Array.isArray(animais) || animais.length === 0) {
     throw new ErroHttp(400, 'Informe fornecedor, data da compra, GTA e pelo menos um animal.');
