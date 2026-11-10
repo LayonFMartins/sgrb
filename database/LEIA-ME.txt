@@ -1,0 +1,23 @@
+SGRB - scripts do banco (PostgreSQL)
+
+01_criacao_tabelas.sql   cria as tabelas (apaga tudo antes)
+02_regras_negocio.sql    funcoes e triggers das regras
+03_povoamento.sql        dados de exemplo (10 animais, 5 usuarios, ficticios)
+04_consultas.sql         views usadas pelo sistema
+05_testes_regras.sql     testes das regras (nao grava nada)
+sgrb_completo.sql        01 a 04 juntos
+
+Como rodar no pgAdmin:
+  1. Banco > Query Tool > abrir sgrb_completo.sql > F5
+  2. Botao direito no banco > Refresh
+  3. (opcional) rodar 05_testes_regras.sql: devem aparecer 48 "OK"
+
+Usuarios de teste (senha de todos: sgrb123)
+  proprietario@example.com   Carlos Eduardo Mendes  PROPRIETARIO
+  ana@example.com            Ana Paula Ferreira     FUNCIONARIO
+  pedro@example.com          Pedro Henrique Lima    FUNCIONARIO (inativo: nao entra)
+  Joao e Marcos nao tem login (so aparecem como responsaveis pelos manejos).
+  As senhas estao no banco como hash bcrypt. Troquem antes de publicar o site.
+
+Backup para entrega:
+  pg_dump -U postgres -d sgrb -f sgrb_backup.sql
