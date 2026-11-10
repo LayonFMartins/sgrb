@@ -1,0 +1,35 @@
+.painel { display: grid; gap: 24px; }
+
+.painel-numeros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.painel-rebanho, .painel-indicador { display: grid; align-content: start; gap: 6px; padding: 20px; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-text); text-decoration: none; font-family: var(--font-functional); }
+.painel-rebanho h2, .painel-indicador h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.painel-rebanho strong, .painel-indicador strong { font-family: var(--font-heading); font-size: 34px; line-height: 1.1; color: var(--color-primary); }
+.painel-rebanho p, .painel-indicador p { font-size: 13px; line-height: 1.5; color: var(--color-text-secondary); }
+.painel-indicador h2 svg { color: var(--sidebar-icon); }
+.painel-indicador--atencao { border-color: #e2c3a4; background: #fffaf3; }
+.painel-indicador--atencao strong { color: var(--color-accent); }
+a.painel-indicador:hover { border-color: var(--color-primary); }
+
+.painel-secao__topo { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.painel-secao__topo a { font-size: 14px; font-weight: 600; }
+
+.painel-alertas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.painel-lista { align-content: start; gap: 12px; padding: 20px; }
+.painel-lista h2 { display: flex; align-items: center; gap: 8px; font-size: 15px; }
+.painel-lista__qtd { padding: 1px 9px; border-radius: 20px; background: var(--color-background); color: var(--color-text-secondary); font-size: 12px; }
+.painel-lista ul { display: grid; margin: 0; padding: 0; list-style: none; font-family: var(--font-functional); font-size: 14px; }
+.painel-lista li { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; padding: 10px 0; border-top: 1px solid var(--border-default); }
+.painel-lista li:first-child { border-top: 0; }
+.painel-lista__brinco { font-weight: 600; color: var(--color-primary); }
+.painel-lista__texto { color: var(--color-text); }
+.painel-lista li .etiqueta { grid-column: 2; justify-self: start; }
+.painel-lista__mais { display: block !important; color: var(--color-text-secondary); font-size: 13px; }
+.painel-lista__vazio { font-size: 14px; }
+
+@media (max-width: 1100px) {
+  .painel-numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .painel-alertas { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .painel-numeros { grid-template-columns: 1fr; }
+}

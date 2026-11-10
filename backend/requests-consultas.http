@@ -1,0 +1,44 @@
+### Testes das consultas (extensao REST Client do VS Code)
+### O backend precisa estar rodando (npm.cmd run dev:backend).
+
+@api = http://localhost:3000/api
+@token = {{login.response.body.token}}
+
+### Login (rode primeiro)
+# @name login
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "senha": "sgrb123" }
+
+### Painel da tela inicial
+GET {{api}}/consultas/painel
+Authorization: Bearer {{token}}
+
+### Lotacao dos piquetes
+GET {{api}}/consultas/lotacao
+Authorization: Bearer {{token}}
+
+### Ranking de GMD por animal
+GET {{api}}/consultas/gmd?agrupar=animal
+Authorization: Bearer {{token}}
+
+### GMD medio por raca
+GET {{api}}/consultas/gmd?agrupar=raca
+Authorization: Bearer {{token}}
+
+### GMD medio por fornecedor
+GET {{api}}/consultas/gmd?agrupar=fornecedor
+Authorization: Bearer {{token}}
+
+### Animais em carencia
+GET {{api}}/consultas/carencia
+Authorization: Bearer {{token}}
+
+### Reforcos atrasados
+GET {{api}}/consultas/reforcos?situacao=Atrasado
+Authorization: Bearer {{token}}
+
+### Vacinacao obrigatoria pendente
+GET {{api}}/consultas/campanhas
+Authorization: Bearer {{token}}

@@ -1,11 +1,15 @@
 import { ArrowLeftRight, ChartBar, CircleMinus, Contact, FileText, LayoutDashboard, Map, Pill, Settings, ShoppingCart, Syringe, Tags, Users, Weight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { ComponentType } from 'react'
 import type { Permissao } from './auth/permissions'
+import { RelatoriosPage } from './pages/Relatorios/RelatoriosPage'
 
 interface NavigationItemBase {
   path: string
   label: string
   icon: LucideIcon | 'boi'
+  // Tela do módulo. Sem ela, aparece a página genérica "em preparação".
+  pagina?: ComponentType
 }
 
 type NavigationItem = NavigationItemBase & (
@@ -36,7 +40,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/racas', label: 'Raças', icon: Tags, permissao: 'racas.visualizar' },
   ] },
   { id: 'analises', label: 'Análises', items: [
-    { path: '/relatorios', label: 'Relatórios e consultas', icon: ChartBar, futuro: true },
+    { path: '/relatorios', label: 'Relatórios e consultas', icon: ChartBar, permissao: 'consultas.visualizar', pagina: RelatoriosPage },
   ] },
   { id: 'sistema', label: 'Sistema', items: [
     { path: '/configuracoes', label: 'Configurações', icon: Settings, futuro: true },

@@ -8,6 +8,7 @@ export const permissoesConhecidas = [
   'piquetes.visualizar', 'piquetes.criar', 'piquetes.editar', 'piquetes.excluir',
   'produtos.visualizar', 'produtos.criar', 'produtos.editar', 'produtos.excluir',
   'usuarios.visualizar', 'usuarios.criar', 'usuarios.editar', 'usuarios.desativar',
+  'consultas.visualizar',
 ] as const;
 
 export type Permissao = typeof permissoesConhecidas[number];
@@ -24,11 +25,13 @@ const permissoesPorPerfil: Record<TipoUsuario, readonly Permissao[]> = {
     'piquetes.visualizar', 'piquetes.criar', 'piquetes.editar', 'piquetes.excluir',
     'produtos.visualizar', 'produtos.criar', 'produtos.editar', 'produtos.excluir',
     'usuarios.visualizar', 'usuarios.criar', 'usuarios.editar', 'usuarios.desativar',
+    'consultas.visualizar',
   ],
   // Funcionario so consulta: as listas abastecem os formularios de manejo.
   FUNCIONARIO: [
     'inicio.visualizar', 'animais.visualizar', 'racas.visualizar',
     'fornecedores.visualizar', 'piquetes.visualizar', 'produtos.visualizar', 'usuarios.visualizar',
+    'consultas.visualizar',
   ],
 };
 
