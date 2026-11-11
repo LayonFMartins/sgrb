@@ -30,3 +30,31 @@
 .linha-tempo time { color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
 .linha-tempo p { margin-top: 2px; color: var(--color-text-secondary); }
 @media (max-width: 520px) { .linha-tempo li { grid-template-columns: 1fr; gap: 2px; } }
+
+/* Alertas no topo da ficha */
+.ficha-alertas { display: grid; gap: 8px; }
+.ficha-alerta { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 12px 16px; border: 1px solid; border-radius: var(--radius-control); font-size: 14px; }
+.ficha-alerta svg { flex-shrink: 0; margin-top: 1px; }
+.ficha-alerta--alerta { border-color: #e8cfb2; background: #fbf3ea; color: #6b4120; }
+.ficha-alerta--erro { border-color: #e6b8b2; background: #fbf1ef; color: var(--status-error); }
+
+/* Gráfico de peso */
+.grafico-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 0 0 20px; }
+.grafico-resumo > div { padding: 12px 14px; border-radius: var(--radius-control); background: var(--color-background); }
+.grafico-resumo dt { color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.grafico-resumo dd { margin: 4px 0 0; font-family: var(--font-functional); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.grafico-resumo dd span { color: var(--color-text-secondary); font-size: 13px; font-weight: 400; }
+
+.grafico { position: relative; overflow: hidden; }
+.grafico svg { display: block; font-family: var(--font-functional); }
+.grafico-grade line { stroke: #e7ece5; stroke-width: 1; }
+.grafico-grade text, .grafico-eixo-x, .grafico-unidade { fill: var(--color-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.grafico-area { fill: var(--color-primary); opacity: .07; }
+.grafico-linha { fill: none; stroke: var(--color-primary); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.grafico-guia { stroke: var(--color-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.grafico-ponto { fill: var(--color-primary); stroke: var(--color-surface); stroke-width: 2; cursor: pointer; outline: none; }
+.grafico-ponto--ativo { stroke-width: 3; }
+.grafico-rotulo { fill: var(--color-text); font-size: 13px; font-weight: 600; }
+.grafico-dica { position: absolute; display: grid; gap: 2px; min-width: 150px; padding: 8px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); box-shadow: 0 4px 14px rgba(48, 58, 50, .14); font-family: var(--font-functional); font-size: 12px; color: var(--color-text-secondary); text-align: center; transform: translate(-50%, calc(-100% - 14px)); pointer-events: none; white-space: nowrap; }
+.grafico-dica--abaixo { transform: translate(-50%, 14px); }
+.grafico-dica strong { color: var(--color-text); font-size: 15px; }

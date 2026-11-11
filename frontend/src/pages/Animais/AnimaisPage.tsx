@@ -4,10 +4,12 @@ import { Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro, Selecao } from '../../components/cadastro/FormularioCadastro'
+import { AvisoSucesso } from '../../components/ui/AvisoSucesso'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Input } from '../../components/ui/Input'
 import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
+import { useAvisoSucesso } from '../../hooks/useAvisoSucesso'
 import { useAcaoLinha, useFormulario } from '../../hooks/useFormulario'
 import type { Animal, Raca, Situacao } from '../../types/animais'
 import { enviar } from '../../utils/enviar'
@@ -39,6 +41,7 @@ function ListaAnimais() {
   const { pode } = usePermissions()
   const form = useFormulario<typeof VAZIO, string>(VAZIO)
   const linha = useAcaoLinha()
+  const sucesso = useAvisoSucesso()
   const f = form.valores
   const [filtro, setFiltro] = useState<Situacao | 'Todos'>('Ativo')
   const [busca, setBusca] = useState('')
@@ -57,6 +60,9 @@ function ListaAnimais() {
 
   function salvar() {
     const corpo = { ...f, brinco: f.brinco.trim(), id_raca: Number(f.id_raca) || null, brinco_mae: f.brinco_mae || null }
+    const mensagem = !form.editando ? `Animal ${corpo.brinco} registrado.`
+      : corpo.brinco !== form.editandoId ? `Animal ${form.editandoId} atualizado; novo brinco: ${corpo.brinco}.`
+      : `Animal ${corpo.brinco} atualizado.`
     form.executar(
       async () => {
         if (f.data_nascimento > hoje) throw new Error('A data de nascimento não pode estar no futuro.')
@@ -64,7 +70,7 @@ function ListaAnimais() {
           ? enviar(`/animais/${encodeURIComponent(form.editandoId ?? '')}`, 'PUT', corpo)
           : enviar('/animais', 'POST', corpo)
       },
-      estado.recarregar,
+      () => { estado.recarregar(); sucesso.mostrar(mensagem) },
     )
   }
 
@@ -79,7 +85,8 @@ function ListaAnimais() {
 
   function excluir(a: Animal) {
     if (!window.confirm(`Excluir o animal ${a.brinco}? Todo o histórico dele (pesagens, aplicações, movimentações) também será apagado.`)) return
-    linha.executar(() => enviar(`/animais/${encodeURIComponent(a.brinco)}`, 'DELETE'), estado.recarregar)
+    linha.executar(() => enviar(`/animais/${encodeURIComponent(a.brinco)}`, 'DELETE'),
+      () => { estado.recarregar(); sucesso.mostrar(`Animal ${a.brinco} excluído.`) })
   }
 
   const colunas: Coluna<Animal>[] = [
@@ -157,5 +164,6 @@ function ListaAnimais() {
           vazio={termo ? 'Nenhum animal encontrado para essa busca.' : 'Nenhum animal nesta situação.'} />}
       </EstadoDados>
     </section>
+    <AvisoSucesso {...sucesso} />
   </>
 }

@@ -19,20 +19,46 @@ animaisRouter.get('/', exigirPermissao('animais.visualizar'), async (req, res) =
   res.json(rows);
 });
 
-// GET /api/animais/:brinco  -> ficha completa (dados + linha do tempo)
+// GET /api/animais/:brinco  -> ficha completa: dados, linha do tempo,
+// pesagens (para o grafico) e alertas sanitarios do animal
 animaisRouter.get('/:brinco', exigirPermissao('animais.visualizar'), async (req, res) => {
   const { brinco } = req.params;
   const animal = await pool.query('SELECT * FROM vw_animal WHERE brinco = $1', [brinco]);
   if (!animal.rows[0]) throw new ErroHttp(404, 'Animal não encontrado.');
 
-  const historico = await pool.query(
-    `SELECT data, evento, detalhe
-       FROM vw_linha_do_tempo
-      WHERE brinco = $1
-      ORDER BY data, ordem`,
-    [brinco]
-  );
-  res.json({ ...animal.rows[0], historico: historico.rows });
+  const [historico, pesagens, carencia, reforcos, campanhas] = await Promise.all([
+    pool.query(
+      `SELECT data, evento, detalhe
+         FROM vw_linha_do_tempo
+        WHERE brinco = $1
+        ORDER BY data, ordem`, [brinco]),
+    pool.query(
+      `SELECT data_pesagem, peso_kg
+         FROM pesagem
+        WHERE brinco = $1
+        ORDER BY data_pesagem`, [brinco]),
+    pool.query(
+      `SELECT produto, data_liberacao, dias_restantes
+         FROM vw_carencia
+        WHERE brinco = $1`, [brinco]),
+    pool.query(
+      `SELECT produto, ultima_dose, data_proxima_dose, dias_atraso
+         FROM vw_reforcos
+        WHERE brinco = $1 AND situacao = 'Atrasado'
+        ORDER BY dias_atraso DESC`, [brinco]),
+    pool.query(
+      `SELECT produto, prazo_final
+         FROM vw_campanhas_pendentes
+        WHERE brinco = $1
+        ORDER BY prazo_final`, [brinco]),
+  ]);
+
+  res.json({
+    ...animal.rows[0],
+    historico: historico.rows,
+    pesagens: pesagens.rows,
+    alertas: { carencia: carencia.rows, reforcos_atrasados: reforcos.rows, campanhas: campanhas.rows },
+  });
 });
 
 // GET /api/animais/:brinco/crias  -> crias de uma matriz
