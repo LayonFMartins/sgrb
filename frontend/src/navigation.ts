@@ -2,6 +2,7 @@ import { ArrowLeftRight, ChartBar, CircleMinus, Contact, FileText, LayoutDashboa
 import type { LucideIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
 import type { Permissao } from './auth/permissions'
+import { AnimaisPage } from './pages/Animais/AnimaisPage'
 import { RelatoriosPage } from './pages/Relatorios/RelatoriosPage'
 import { FornecedoresPage } from './pages/Cadastros/FornecedoresPage'
 import { PiquetesPage } from './pages/Cadastros/PiquetesPage'
@@ -26,7 +27,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/', label: 'Início', icon: LayoutDashboard, permissao: 'inicio.visualizar' },
   ] },
   { id: 'gestao-rebanho', label: 'Gestão do rebanho', items: [
-    { path: '/animais', label: 'Animais', icon: 'boi', permissao: 'animais.visualizar' },
+    { path: '/animais', label: 'Animais', icon: 'boi', permissao: 'animais.visualizar', pagina: AnimaisPage },
     { path: '/pesagens', label: 'Pesagens', icon: Weight, futuro: true },
     { path: '/manejo-sanitario', label: 'Manejo sanitário', icon: Syringe, futuro: true },
     { path: '/piquetes', label: 'Piquetes', icon: Map, permissao: 'piquetes.visualizar', pagina: PiquetesPage },
