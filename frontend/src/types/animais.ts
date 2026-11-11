@@ -24,11 +24,24 @@ export interface EventoHistorico {
   detalhe: string | null
 }
 
+export interface Pesagem {
+  data_pesagem: string
+  peso_kg: number
+}
+
+export interface AlertasAnimal {
+  carencia: { produto: string; data_liberacao: string; dias_restantes: number }[]
+  reforcos_atrasados: { produto: string; ultima_dose: number; data_proxima_dose: string; dias_atraso: number }[]
+  campanhas: { produto: string; prazo_final: string }[]
+}
+
 export interface FichaAnimal extends Animal {
   data_compra: string | null
   valor_compra: number | null
   data_baixa: string | null
   historico: EventoHistorico[]
+  pesagens: Pesagem[]
+  alertas: AlertasAnimal
 }
 
 export interface Cria {

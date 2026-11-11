@@ -1,11 +1,13 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, CalendarClock, ShieldAlert, Syringe } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
-import type { Cria, FichaAnimal as Ficha } from '../../types/animais'
-import { formatarData, formatarNumero, formatarPeso } from '../../utils/formatar'
+import type { AlertasAnimal, Cria, FichaAnimal as Ficha } from '../../types/animais'
+import { formatarData, formatarNumero, formatarPeso, plural } from '../../utils/formatar'
+import { GraficoPeso } from './GraficoPeso'
 import { ETIQUETA_SITUACAO, idade, nomeSexo } from './animal'
 
 const linkFicha = (brinco: string) => `/animais?ficha=${encodeURIComponent(brinco)}`
@@ -23,6 +25,8 @@ export function FichaAnimal({ brinco }: { brinco: string }) {
 
     <EstadoDados {...estado}>
       {a && <div className="ficha">
+        <Alertas alertas={a.alertas} />
+
         <section className="content-card" aria-labelledby="ficha-dados">
           <h2 id="ficha-dados">Dados do animal</h2>
           <dl className="ficha-dados">
@@ -43,6 +47,11 @@ export function FichaAnimal({ brinco }: { brinco: string }) {
               : `${formatarPeso(a.ultimo_peso_kg)} em ${formatarData(a.data_ultimo_peso)}`}</Dado>
             {a.data_baixa && <Dado rotulo="Data da baixa">{formatarData(a.data_baixa)}</Dado>}
           </dl>
+        </section>
+
+        <section className="content-card" aria-labelledby="ficha-peso">
+          <h2 id="ficha-peso">Evolução do peso</h2>
+          <GraficoPeso pesagens={a.pesagens} />
         </section>
 
         {a.sexo === 'F' && <Crias brinco={a.brinco} />}
@@ -86,5 +95,33 @@ function Crias({ brinco }: { brinco: string }) {
       {dados && <Tabela legenda={`Crias de ${brinco}`} colunas={colunasCrias} linhas={dados}
         chave={c => c.brinco} vazio="Nenhuma cria registrada." />}
     </EstadoDados>
+  </section>
+}
+
+// Faixa no topo da ficha com o que precisa de atenção neste animal.
+function Alertas({ alertas }: { alertas: AlertasAnimal }) {
+  const itens: { chave: string; icone: LucideIcon; tom: 'alerta' | 'erro'; titulo: string; texto: string }[] = [
+    ...alertas.carencia.map(c => ({
+      chave: `carencia-${c.produto}`, icone: ShieldAlert, tom: 'alerta' as const,
+      titulo: 'Em carência',
+      texto: `${c.produto}: não pode ser vendido para abate até ${formatarData(c.data_liberacao)} (faltam ${plural(c.dias_restantes, 'dia', 'dias')}).`,
+    })),
+    ...alertas.reforcos_atrasados.map(r => ({
+      chave: `reforco-${r.produto}`, icone: CalendarClock, tom: 'erro' as const,
+      titulo: 'Reforço atrasado',
+      texto: `${r.produto}: dose prevista para ${formatarData(r.data_proxima_dose)} (${plural(r.dias_atraso, 'dia', 'dias')} de atraso).`,
+    })),
+    ...alertas.campanhas.map(c => ({
+      chave: `campanha-${c.produto}`, icone: Syringe, tom: 'alerta' as const,
+      titulo: 'Vacinação obrigatória pendente',
+      texto: `${c.produto}: vacinar até ${formatarData(c.prazo_final)}.`,
+    })),
+  ]
+  if (itens.length === 0) return null
+  return <section className="ficha-alertas" aria-label="Alertas do animal">
+    {itens.map(({ chave, icone: Icone, tom, titulo, texto }) => <p key={chave} className={`ficha-alerta ficha-alerta--${tom}`}>
+      <Icone size={18} aria-hidden="true" />
+      <span><strong>{titulo}.</strong> {texto}</span>
+    </p>)}
   </section>
 }
