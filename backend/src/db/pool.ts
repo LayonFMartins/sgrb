@@ -16,3 +16,9 @@ export const pool = new Pool({
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000
 });
+
+// Se o banco encerrar uma conexão ociosa (o Neon faz isso quando suspende
+// por inatividade), o pool só descarta a conexão; sem isso o servidor cai.
+pool.on('error', (erro) => {
+  console.error('Conexão ociosa com o banco encerrada:', erro.message);
+});

@@ -7,13 +7,14 @@ import { mensagemDeErro } from '../utils/enviar'
 //   const f = useFormulario(VAZIO)
 //   f.abrirNovo() / f.abrirEdicao(id, valores) / f.alterar('nome', 'P01')
 //   f.executar(() => enviar(...), recarregar)
-export function useFormulario<F extends object>(vazio: F) {
+// O id do registro é numérico na maioria das telas; em Animais é o brinco (texto).
+export function useFormulario<F extends object, I extends number | string = number>(vazio: F) {
   const [valores, setValores] = useState<F | null>(null)
-  const [editandoId, setEditandoId] = useState<number | null>(null)
+  const [editandoId, setEditandoId] = useState<I | null>(null)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
 
-  function abrir(id: number | null, inicial: F) {
+  function abrir(id: I | null, inicial: F) {
     setEditandoId(id)
     setValores(inicial)
     setErro('')
@@ -52,7 +53,7 @@ export function useFormulario<F extends object>(vazio: F) {
     salvando,
     erro,
     abrirNovo: () => abrir(null, vazio),
-    abrirEdicao: (id: number, inicial: F) => abrir(id, inicial),
+    abrirEdicao: (id: I, inicial: F) => abrir(id, inicial),
     fechar,
     alterar,
     executar,

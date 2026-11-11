@@ -1,0 +1,32 @@
+/* Tela de animais: lista com filtros e ficha do animal */
+
+.animais-filtros { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 20px; margin-bottom: 16px; }
+.animais-busca { flex: 0 1 340px; }
+
+/* .seletor vem de Relatorios.css */
+.seletor__qtd { margin-left: 4px; font-weight: 400; font-variant-numeric: tabular-nums; }
+
+.sem-quebra { white-space: nowrap; }
+
+.animal-link { color: var(--color-primary); font-weight: 700; text-decoration: none; }
+.animal-link:hover { text-decoration: underline; }
+
+.ficha-voltar { display: inline-flex; align-items: center; gap: 6px; width: fit-content; color: var(--color-primary); font-size: 14px; font-weight: 600; text-decoration: none; }
+.ficha-voltar:hover { text-decoration: underline; }
+.page-heading p .etiqueta { margin-left: 6px; vertical-align: 1px; }
+
+.ficha { display: grid; gap: 24px; }
+.ficha h2 { margin-bottom: 16px; font-size: 18px; }
+
+.ficha-dados { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px 24px; margin: 0; }
+.ficha-dados dt { color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.ficha-dados dd { margin: 4px 0 0; font-size: 15px; }
+.ficha-dados a { color: var(--color-primary); font-weight: 700; }
+
+.linha-tempo { position: relative; display: grid; gap: 18px; margin: 0; padding: 0 0 0 22px; list-style: none; }
+.linha-tempo::before { content: ''; position: absolute; top: 6px; bottom: 6px; left: 5px; width: 2px; background: var(--border-default); }
+.linha-tempo li { position: relative; display: grid; grid-template-columns: 96px 1fr; gap: 16px; font-size: 14px; }
+.linha-tempo li::before { content: ''; position: absolute; top: 5px; left: -22px; width: 12px; height: 12px; border: 2px solid var(--color-primary); border-radius: 50%; background: var(--color-surface); }
+.linha-tempo time { color: var(--color-text-secondary); font-variant-numeric: tabular-nums; }
+.linha-tempo p { margin-top: 2px; color: var(--color-text-secondary); }
+@media (max-width: 520px) { .linha-tempo li { grid-template-columns: 1fr; gap: 2px; } }
