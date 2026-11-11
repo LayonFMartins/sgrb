@@ -175,6 +175,18 @@ SELECT a.brinco,
    AND NOT EXISTS (SELECT 1 FROM baixa b  WHERE b.brinco = a.brinco)
    AND NOT EXISTS (SELECT 1 FROM recebe r WHERE r.brinco = a.brinco AND r.id_produto = p.id_produto);
 
+-- Formatacao de numeros no padrao brasileiro (468.5 -> '468,5 kg'; 3150 -> 'R$ 3.150,00').
+-- O formato usa ',' e '.' literais e troca depois, para nao depender do idioma do servidor.
+CREATE OR REPLACE FUNCTION fn_kg(p_valor NUMERIC) RETURNS TEXT
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT translate(to_char(p_valor, 'FM999,990.0'), ',.', '.,') || ' kg';
+$$;
+
+CREATE OR REPLACE FUNCTION fn_reais(p_valor NUMERIC) RETURNS TEXT
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT 'R$ ' || translate(to_char(p_valor, 'FM999,999,990.00'), ',.', '.,');
+$$;
+
 -- Linha do tempo de rastreabilidade (ficha completa do animal)
 CREATE VIEW vw_linha_do_tempo AS
 SELECT a.brinco, a.data_nascimento AS data, 1 AS ordem, 'Nascimento' AS evento,
@@ -183,10 +195,10 @@ SELECT a.brinco, a.data_nascimento AS data, 1 AS ordem, 'Nascimento' AS evento,
   FROM animal a
 UNION ALL
 SELECT a.brinco, a.data_compra, 2, 'Compra',
-       f.nome_propriedade || ' (' || f.municipio || '/' || f.uf || ') - R$ ' || a.valor_compra
+       f.nome_propriedade || ' (' || f.municipio || '/' || f.uf || ') - ' || fn_reais(a.valor_compra)
   FROM animal a JOIN fornecedor f ON f.id_fornecedor = a.id_fornecedor
 UNION ALL
-SELECT t.brinco, g.data_emissao, 3, 'GTA de ' || lower(g.tipo),
+SELECT t.brinco, g.data_emissao, 3, CASE g.tipo WHEN 'SAIDA' THEN 'GTA de saída' ELSE 'GTA de entrada' END,
        g.numero_gta || ': ' || g.origem || ' -> ' || g.destino || ' (' || lower(g.finalidade) || ')'
   FROM transita_com t JOIN gta g ON g.numero_gta = t.numero_gta
 UNION ALL
@@ -195,7 +207,7 @@ SELECT o.brinco, o.data_entrada, 4, 'Entrada em piquete',
   FROM ocupa o JOIN piquete pq ON pq.id_piquete = o.id_piquete
 UNION ALL
 SELECT p.brinco, p.data_pesagem, 5, 'Pesagem',
-       p.peso_kg || ' kg - ' || u.nome
+       fn_kg(p.peso_kg) || ' - ' || u.nome
   FROM pesagem p JOIN usuario u ON u.id_usuario = p.id_usuario
 UNION ALL
 SELECT r.brinco, r.data_aplicacao, 6, 'Aplicação sanitária',
@@ -204,8 +216,8 @@ SELECT r.brinco, r.data_aplicacao, 6, 'Aplicação sanitária',
   JOIN produto_sanitario ps ON ps.id_produto = r.id_produto
   JOIN usuario u            ON u.id_usuario = r.id_usuario
 UNION ALL
-SELECT b.brinco, b.data_baixa, 7, 'Baixa (' || lower(b.motivo) || ')',
-       COALESCE(v.comprador || ' - ' || v.peso_final_kg || ' kg - R$ ' || v.valor_venda, o.causa)
+SELECT b.brinco, b.data_baixa, 7, CASE b.motivo WHEN 'VENDA' THEN 'Baixa (venda)' ELSE 'Baixa (óbito)' END,
+       COALESCE(v.comprador || ' - ' || fn_kg(v.peso_final_kg) || ' - ' || fn_reais(v.valor_venda), o.causa)
   FROM baixa b
   LEFT JOIN venda v ON v.id_baixa = b.id_baixa
   LEFT JOIN obito o ON o.id_baixa = b.id_baixa;

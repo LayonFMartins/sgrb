@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { usePermissions } from '../../auth/permissions'
 import { useDados } from '../../hooks/useDados'
 import { EstadoDados } from '../../components/ui/EstadoDados'
+import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { LotacaoPiquetes } from '../../components/consultas/LotacaoPiquetes'
 import type { Painel } from '../../types/consultas'
 import { formatarData, plural } from '../../utils/formatar'
@@ -104,7 +105,7 @@ function ListaAlertas({ titulo, vazio, itens }: {
       ? <p className="painel-lista__vazio">{vazio}</p>
       : <ul>
         {itens.slice(0, LIMITE).map(i => <li key={i.chave}>
-          <span className="painel-lista__brinco">{i.brinco}</span>
+          <LinkAnimal brinco={i.brinco} className="painel-lista__brinco" />
           <span className="painel-lista__texto">{i.texto}</span>
           <span className={`etiqueta etiqueta--${i.tom}`}>{i.detalhe}</span>
         </li>)}

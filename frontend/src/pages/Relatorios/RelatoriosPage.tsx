@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useDados } from '../../hooks/useDados'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Tabela, type Coluna } from '../../components/ui/Tabela'
+import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { LotacaoPiquetes } from '../../components/consultas/LotacaoPiquetes'
 import type { Campanha, Carencia, GmdAnimal, GmdGrupo, Piquete, Reforco } from '../../types/consultas'
 import { formatarData, formatarNumero, formatarPeso, plural } from '../../utils/formatar'
@@ -55,7 +56,7 @@ function Lotacao() {
 
 const colunasGmdAnimal: Coluna<GmdAnimal>[] = [
   { titulo: '#', valor: g => g.posicao, alinhar: 'direita' },
-  { titulo: 'Brinco', valor: g => <strong>{g.brinco}</strong> },
+  { titulo: 'Brinco', valor: g => <LinkAnimal brinco={g.brinco} /> },
   { titulo: 'Raça', valor: g => g.raca },
   { titulo: 'Categoria', valor: g => g.categoria },
   { titulo: 'Origem', valor: g => g.fornecedor ?? 'Nascido na fazenda' },
@@ -105,7 +106,7 @@ function GmdPorGrupo({ agrupar }: { agrupar: 'raca' | 'fornecedor' }) {
 }
 
 const colunasCarencia: Coluna<Carencia>[] = [
-  { titulo: 'Brinco', valor: c => <strong>{c.brinco}</strong> },
+  { titulo: 'Brinco', valor: c => <LinkAnimal brinco={c.brinco} /> },
   { titulo: 'Produto', valor: c => c.produto },
   { titulo: 'Aplicado em', valor: c => formatarData(c.data_aplicacao) },
   { titulo: 'Carência', valor: c => plural(c.carencia_dias, 'dia', 'dias'), alinhar: 'direita' },
@@ -127,7 +128,7 @@ function CarenciaAba() {
 }
 
 const colunasReforcos: Coluna<Reforco>[] = [
-  { titulo: 'Brinco', valor: r => <strong>{r.brinco}</strong> },
+  { titulo: 'Brinco', valor: r => <LinkAnimal brinco={r.brinco} /> },
   { titulo: 'Produto', valor: r => r.produto },
   { titulo: 'Última dose', valor: r => `${r.ultima_dose}ª em ${formatarData(r.data_ultima_dose)}` },
   { titulo: 'Próxima dose', valor: r => formatarData(r.data_proxima_dose) },
@@ -155,7 +156,7 @@ function Reforcos() {
 }
 
 const colunasCampanhas: Coluna<Campanha>[] = [
-  { titulo: 'Brinco', valor: c => <strong>{c.brinco}</strong> },
+  { titulo: 'Brinco', valor: c => <LinkAnimal brinco={c.brinco} /> },
   { titulo: 'Sexo', valor: c => c.sexo === 'F' ? 'Fêmea' : 'Macho' },
   { titulo: 'Idade', valor: c => plural(c.idade_meses, 'mês', 'meses'), alinhar: 'direita' },
   { titulo: 'Vacina', valor: c => c.produto },

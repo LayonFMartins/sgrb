@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, CalendarClock, ShieldAlert, Syringe } from 'lucide-react'
+import { ArrowLeft, CalendarClock, Printer, ShieldAlert, Syringe } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useAuth } from '../../auth/AuthContext'
+import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
@@ -10,15 +12,22 @@ import { formatarData, formatarNumero, formatarPeso, plural } from '../../utils/
 import { GraficoPeso } from './GraficoPeso'
 import { ETIQUETA_SITUACAO, idade, nomeSexo } from './animal'
 
-const linkFicha = (brinco: string) => `/animais?ficha=${encodeURIComponent(brinco)}`
-
 export function FichaAnimal({ brinco }: { brinco: string }) {
   const { dados: a, ...estado } = useDados<Ficha>(`/animais/${encodeURIComponent(brinco)}`)
+  const { usuario } = useAuth()
+  const emitidaEm = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 
   return <>
     <header className="page-heading">
       <Link to="/animais" className="ficha-voltar"><ArrowLeft size={16} aria-hidden="true" />Voltar para a lista</Link>
-      <h1>Animal {brinco}</h1>
+      {/* Só aparece no papel/PDF (ver @media print em Animais.css) */}
+      <p className="ficha-impressao">SGRB · Ficha de rastreabilidade do animal · emitida em {emitidaEm} por {usuario?.nome}</p>
+      <div className="ficha-titulo">
+        <h1>Animal {brinco}</h1>
+        {a && <button type="button" className="botao-secundario ficha-imprimir" onClick={() => window.print()}>
+          <Printer size={18} aria-hidden="true" />Imprimir ficha
+        </button>}
+      </div>
       {a && <p>{a.categoria} · {a.raca} · {idade(a.idade_meses)}{' '}
         <span className={`etiqueta etiqueta--${ETIQUETA_SITUACAO[a.situacao]}`}>{a.situacao}</span></p>}
     </header>
@@ -37,7 +46,7 @@ export function FichaAnimal({ brinco }: { brinco: string }) {
             <Dado rotulo="Idade">{idade(a.idade_meses)}</Dado>
             <Dado rotulo="Categoria">{a.categoria}</Dado>
             <Dado rotulo="Origem">{a.origem}</Dado>
-            <Dado rotulo="Mãe">{a.brinco_mae ? <Link to={linkFicha(a.brinco_mae)}>{a.brinco_mae}</Link> : 'Não registrada'}</Dado>
+            <Dado rotulo="Mãe">{a.brinco_mae ? <LinkAnimal brinco={a.brinco_mae} /> : 'Não registrada'}</Dado>
             {a.origem === 'Compra' && <>
               <Dado rotulo="Fornecedor">{a.fornecedor}</Dado>
               <Dado rotulo="Compra">{formatarData(a.data_compra)} · R$ {formatarNumero(a.valor_compra, 2)}</Dado>
@@ -80,7 +89,7 @@ function Dado({ rotulo, children }: { rotulo: string; children: ReactNode }) {
 }
 
 const colunasCrias: Coluna<Cria>[] = [
-  { titulo: 'Brinco', valor: c => <Link className="animal-link" to={linkFicha(c.brinco)}>{c.brinco}</Link> },
+  { titulo: 'Brinco', valor: c => <LinkAnimal brinco={c.brinco} /> },
   { titulo: 'Sexo', valor: c => nomeSexo(c.sexo) },
   { titulo: 'Nascimento', valor: c => formatarData(c.data_nascimento) },
   { titulo: 'Categoria', valor: c => c.categoria },

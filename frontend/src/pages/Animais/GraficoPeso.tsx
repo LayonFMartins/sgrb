@@ -82,7 +82,7 @@ export function GraficoPeso({ pesagens }: { pesagens: Pesagem[] }) {
   return <>
     {resumo}
     <div className="grafico" ref={caixa}>
-      <svg width={largura} height={ALTURA} role="img" onMouseMove={aoMover} onMouseLeave={() => setAtivo(null)}
+      <svg width={largura} height={ALTURA} viewBox={`0 0 ${largura} ${ALTURA}`} role="img" onMouseMove={aoMover} onMouseLeave={() => setAtivo(null)}
         aria-label={`Peso de ${formatarPeso(primeira.peso_kg)} em ${formatarData(primeira.data_pesagem)} a ${formatarPeso(ultima.peso_kg)} em ${formatarData(ultima.data_pesagem)}, ${pesagens.length} pesagens.`}>
         {marcas.map(m => <g key={m} className="grafico-grade">
           <line x1={MARGEM.esquerda} x2={largura - MARGEM.direita} y1={y(m)} y2={y(m)} />
