@@ -1,4 +1,4 @@
--- SGRB - criação das tabelas (PostgreSQL)
+﻿-- SGRB - criação das tabelas (PostgreSQL)
 
 DROP TABLE IF EXISTS
     obito, venda, baixa, recebe, produto_sanitario, pesagem, funcionario, usuario,
@@ -911,7 +911,7 @@ CREATE CONSTRAINT TRIGGER trg_usuario_exige_proprietario
     DEFERRABLE INITIALLY DEFERRED
     FOR EACH ROW EXECUTE FUNCTION fn_usuario_exige_proprietario();
 
--- RI-26: usuario inativo nao pode ser responsavel por novos manejos
+-- RI-26: usuario inativo nao pode ser responsável por novos manejos
 CREATE OR REPLACE FUNCTION fn_manejo_exige_usuario_ativo()
 RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
@@ -921,7 +921,7 @@ DECLARE
 BEGIN
     SELECT nome, ativo INTO v_nome, v_ativo FROM usuario WHERE id_usuario = NEW.id_usuario;
     IF v_ativo = FALSE THEN
-        RAISE EXCEPTION 'RI-26: o usuário % está inativo e não pode ser responsavel por novos manejos.', v_nome
+        RAISE EXCEPTION 'RI-26: o usuário % está inativo e não pode ser responsável por novos manejos.', v_nome
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
