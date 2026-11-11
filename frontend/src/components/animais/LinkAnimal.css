@@ -1,0 +1,2 @@
+.link-animal { color: var(--color-primary); font-weight: 700; text-decoration: none; text-underline-offset: 3px; }
+.link-animal:hover, .link-animal:focus-visible { text-decoration: underline; }

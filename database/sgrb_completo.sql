@@ -287,14 +287,14 @@ BEGIN
     END IF;
 
     IF p_data < v_nascimento THEN
-        RAISE EXCEPTION 'RI-15/16: % do animal % em % e anterior ao nascimento (%).',
+        RAISE EXCEPTION 'RI-15/16: % do animal % em % é anterior ao nascimento (%).',
             p_manejo, p_brinco, to_char(p_data, 'DD/MM/YYYY'), to_char(v_nascimento, 'DD/MM/YYYY')
             USING ERRCODE = 'check_violation';
     END IF;
 
     SELECT data_baixa INTO v_baixa FROM baixa WHERE brinco = p_brinco;
     IF v_baixa IS NOT NULL AND p_data > v_baixa THEN
-        RAISE EXCEPTION 'RI-22: o animal % teve baixa em %; nao pode receber % em %.',
+        RAISE EXCEPTION 'RI-22: o animal % teve baixa em %; não pode receber % em %.',
             p_brinco, to_char(v_baixa, 'DD/MM/YYYY'), p_manejo, to_char(p_data, 'DD/MM/YYYY')
             USING ERRCODE = 'check_violation';
     END IF;
@@ -323,11 +323,11 @@ BEGIN
         RETURN NEW;
     END IF;
     IF v_sexo <> 'F' THEN
-        RAISE EXCEPTION 'RI-02: o animal % nao pode ser mae, pois e macho.', NEW.brinco_mae
+        RAISE EXCEPTION 'RI-02: o animal % não pode ser mãe, pois é macho.', NEW.brinco_mae
             USING ERRCODE = 'check_violation';
     END IF;
     IF v_nascimento >= NEW.data_nascimento THEN
-        RAISE EXCEPTION 'RI-02: a mae % precisa ter nascido antes da cria %.', NEW.brinco_mae, NEW.brinco
+        RAISE EXCEPTION 'RI-02: a mãe % precisa ter nascido antes da cria %.', NEW.brinco_mae, NEW.brinco
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
@@ -347,7 +347,7 @@ DECLARE
 BEGIN
     IF NEW.sexo = 'M' AND OLD.sexo = 'F'
        AND EXISTS (SELECT 1 FROM animal WHERE brinco_mae = NEW.brinco) THEN
-        RAISE EXCEPTION 'RI-02: o animal % e mae de outros animais e nao pode ter o sexo alterado para macho.', NEW.brinco
+        RAISE EXCEPTION 'RI-02: o animal % é mãe de outros animais e não pode ter o sexo alterado para macho.', NEW.brinco
             USING ERRCODE = 'check_violation';
     END IF;
 
@@ -388,7 +388,7 @@ DECLARE
 BEGIN
     SELECT count(*) INTO v_crias FROM animal WHERE brinco_mae = OLD.brinco;
     IF v_crias > 0 THEN
-        RAISE EXCEPTION 'O animal % e mae de % animal(is) cadastrado(s) e nao pode ser excluido.', OLD.brinco, v_crias
+        RAISE EXCEPTION 'O animal % é mãe de % animal(is) cadastrado(s) e não pode ser excluído.', OLD.brinco, v_crias
             USING ERRCODE = 'foreign_key_violation';
     END IF;
     RETURN OLD;
@@ -431,7 +431,7 @@ BEGIN
 
     -- RI-09: lotacao
     IF v_ocupacao >= v_capacidade THEN
-        RAISE EXCEPTION 'RI-09: o piquete % esta lotado (% de % cabecas).', v_nome, v_ocupacao, v_capacidade
+        RAISE EXCEPTION 'RI-09: o piquete % está lotado (% de % cabeças).', v_nome, v_ocupacao, v_capacidade
             USING ERRCODE = 'check_violation';
     END IF;
 
@@ -444,7 +444,7 @@ BEGIN
            AND NOT (o.brinco = NEW.brinco AND o.data_entrada = NEW.data_entrada);
 
         IF v_ultima IS NOT NULL AND NEW.data_entrada < v_ultima + v_descanso THEN
-            RAISE EXCEPTION 'RI-10: o piquete % esta em descanso ate %.', v_nome,
+            RAISE EXCEPTION 'RI-10: o piquete % está em descanso até %.', v_nome,
                 to_char(v_ultima + v_descanso, 'DD/MM/YYYY')
                 USING ERRCODE = 'check_violation';
         END IF;
@@ -493,17 +493,17 @@ BEGIN
     v_idade := fn_idade_meses(v_nascimento, NEW.data_aplicacao);
 
     IF p.sexo_alvo IS NOT NULL AND p.sexo_alvo <> v_sexo THEN
-        RAISE EXCEPTION 'RI-14: o produto % e restrito a animais do sexo %; o animal % e do sexo %.',
+        RAISE EXCEPTION 'RI-14: o produto % é restrito a animais do sexo %; o animal % é do sexo %.',
             p.nome, p.sexo_alvo, NEW.brinco, v_sexo
             USING ERRCODE = 'check_violation';
     END IF;
     IF p.idade_min_meses IS NOT NULL AND v_idade < p.idade_min_meses THEN
-        RAISE EXCEPTION 'RI-14: o produto % exige no minimo % meses; o animal % tem % meses.',
+        RAISE EXCEPTION 'RI-14: o produto % exige no mínimo % meses; o animal % tem % meses.',
             p.nome, p.idade_min_meses, NEW.brinco, v_idade
             USING ERRCODE = 'check_violation';
     END IF;
     IF p.idade_max_meses IS NOT NULL AND v_idade > p.idade_max_meses THEN
-        RAISE EXCEPTION 'RI-14: o produto % permite no maximo % meses; o animal % tem % meses.',
+        RAISE EXCEPTION 'RI-14: o produto % permite no máximo % meses; o animal % tem % meses.',
             p.nome, p.idade_max_meses, NEW.brinco, v_idade
             USING ERRCODE = 'check_violation';
     END IF;
@@ -545,7 +545,7 @@ DECLARE
 BEGIN
     SELECT data_nascimento INTO v_nascimento FROM animal WHERE brinco = NEW.brinco;
     IF NEW.data_baixa < v_nascimento THEN
-        RAISE EXCEPTION 'RI-17: a baixa do animal % nao pode ser anterior ao nascimento (%).',
+        RAISE EXCEPTION 'RI-17: a baixa do animal % não pode ser anterior ao nascimento (%).',
             NEW.brinco, to_char(v_nascimento, 'DD/MM/YYYY')
             USING ERRCODE = 'check_violation';
     END IF;
@@ -594,11 +594,11 @@ RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
 BEGIN
     IF NEW.motivo = 'VENDA' AND NOT EXISTS (SELECT 1 FROM venda WHERE id_baixa = NEW.id_baixa) THEN
-        RAISE EXCEPTION 'RI-18: a baixa do animal % tem motivo VENDA, mas os dados da venda nao foram informados.', NEW.brinco
+        RAISE EXCEPTION 'RI-18: a baixa do animal % tem motivo venda, mas os dados da venda não foram informados.', NEW.brinco
             USING ERRCODE = 'check_violation';
     END IF;
     IF NEW.motivo = 'OBITO' AND NOT EXISTS (SELECT 1 FROM obito WHERE id_baixa = NEW.id_baixa) THEN
-        RAISE EXCEPTION 'RI-18: a baixa do animal % tem motivo OBITO, mas a causa nao foi informada.', NEW.brinco
+        RAISE EXCEPTION 'RI-18: a baixa do animal % tem motivo óbito, mas a causa não foi informada.', NEW.brinco
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NULL;
@@ -622,7 +622,7 @@ DECLARE
 BEGIN
     SELECT motivo INTO v_motivo FROM baixa WHERE id_baixa = NEW.id_baixa;
     IF v_motivo IS NOT NULL AND v_motivo <> v_esperado THEN
-        RAISE EXCEPTION 'RI-18: a baixa % tem motivo %, entao nao pode ser registrada em %.',
+        RAISE EXCEPTION 'RI-18: a baixa % tem motivo %, então não pode ser registrada em %.',
             NEW.id_baixa, v_motivo, upper(TG_TABLE_NAME)
             USING ERRCODE = 'check_violation';
     END IF;
@@ -707,7 +707,7 @@ BEGIN
 
     -- RI-20
     IF NOT COALESCE(v_saida, FALSE) THEN
-        RAISE EXCEPTION 'RI-20: a venda do animal % exige uma GTA de saida.', p_brinco
+        RAISE EXCEPTION 'RI-20: a venda do animal % exige uma GTA de saída.', p_brinco
             USING ERRCODE = 'check_violation';
     END IF;
 
@@ -719,7 +719,7 @@ BEGIN
          WHERE r.brinco = p_brinco;
 
         IF v_liberacao > v_data_venda THEN
-            RAISE EXCEPTION 'RI-19: o animal % esta em carencia ate % e nao pode ser vendido para abate em %.',
+            RAISE EXCEPTION 'RI-19: o animal % está em carência até % e não pode ser vendido para abate em %.',
                 p_brinco, to_char(v_liberacao, 'DD/MM/YYYY'), to_char(v_data_venda, 'DD/MM/YYYY')
                 USING ERRCODE = 'check_violation';
         END IF;
@@ -810,7 +810,7 @@ DECLARE
 BEGIN
     SELECT data_baixa INTO v_baixa FROM baixa WHERE brinco = NEW.brinco;
     IF v_baixa IS NOT NULL AND (NEW.data_saida IS NULL OR NEW.data_saida > v_baixa) THEN
-        RAISE EXCEPTION 'RI-22: o animal % teve baixa em %; a saida do piquete nao pode ficar em aberto nem depois dessa data.',
+        RAISE EXCEPTION 'RI-22: o animal % teve baixa em %; a saída do piquete não pode ficar em aberto nem depois dessa data.',
             NEW.brinco, to_char(v_baixa, 'DD/MM/YYYY')
             USING ERRCODE = 'check_violation';
     END IF;
@@ -832,7 +832,7 @@ BEGIN
     SELECT count(*) INTO v_ocupacao
       FROM ocupa WHERE id_piquete = NEW.id_piquete AND data_saida IS NULL;
     IF v_ocupacao > NEW.capacidade_max THEN
-        RAISE EXCEPTION 'RI-09: o piquete % tem % animais; a capacidade nao pode ser reduzida para %.',
+        RAISE EXCEPTION 'RI-09: o piquete % tem % animais; a capacidade não pode ser reduzida para %.',
             NEW.nome, v_ocupacao, NEW.capacidade_max
             USING ERRCODE = 'check_violation';
     END IF;
@@ -861,7 +861,7 @@ BEGIN
      LIMIT 1;
 
     IF v_brinco IS NOT NULL THEN
-        RAISE EXCEPTION 'RI-14: a nova restricao de % invalida a aplicacao ja registrada no animal %.',
+        RAISE EXCEPTION 'RI-14: a nova restrição de % invalida a aplicação já registrada no animal %.',
             NEW.nome, v_brinco
             USING ERRCODE = 'check_violation';
     END IF;
@@ -899,7 +899,7 @@ RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM usuario WHERE tipo = 'PROPRIETARIO' AND ativo) THEN
-        RAISE EXCEPTION 'RI-25: o sistema precisa ter pelo menos um proprietario ativo.'
+        RAISE EXCEPTION 'RI-25: o sistema precisa ter pelo menos um proprietário ativo.'
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NULL;
@@ -921,7 +921,7 @@ DECLARE
 BEGIN
     SELECT nome, ativo INTO v_nome, v_ativo FROM usuario WHERE id_usuario = NEW.id_usuario;
     IF v_ativo = FALSE THEN
-        RAISE EXCEPTION 'RI-26: o usuario % esta inativo e nao pode ser responsavel por novos manejos.', v_nome
+        RAISE EXCEPTION 'RI-26: o usuário % está inativo e não pode ser responsavel por novos manejos.', v_nome
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
@@ -1417,6 +1417,18 @@ SELECT a.brinco,
    AND NOT EXISTS (SELECT 1 FROM baixa b  WHERE b.brinco = a.brinco)
    AND NOT EXISTS (SELECT 1 FROM recebe r WHERE r.brinco = a.brinco AND r.id_produto = p.id_produto);
 
+-- Formatacao de numeros no padrao brasileiro (468.5 -> '468,5 kg'; 3150 -> 'R$ 3.150,00').
+-- O formato usa ',' e '.' literais e troca depois, para nao depender do idioma do servidor.
+CREATE OR REPLACE FUNCTION fn_kg(p_valor NUMERIC) RETURNS TEXT
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT translate(to_char(p_valor, 'FM999,990.0'), ',.', '.,') || ' kg';
+$$;
+
+CREATE OR REPLACE FUNCTION fn_reais(p_valor NUMERIC) RETURNS TEXT
+LANGUAGE sql IMMUTABLE AS $$
+    SELECT 'R$ ' || translate(to_char(p_valor, 'FM999,999,990.00'), ',.', '.,');
+$$;
+
 -- Linha do tempo de rastreabilidade (ficha completa do animal)
 CREATE VIEW vw_linha_do_tempo AS
 SELECT a.brinco, a.data_nascimento AS data, 1 AS ordem, 'Nascimento' AS evento,
@@ -1425,10 +1437,10 @@ SELECT a.brinco, a.data_nascimento AS data, 1 AS ordem, 'Nascimento' AS evento,
   FROM animal a
 UNION ALL
 SELECT a.brinco, a.data_compra, 2, 'Compra',
-       f.nome_propriedade || ' (' || f.municipio || '/' || f.uf || ') - R$ ' || a.valor_compra
+       f.nome_propriedade || ' (' || f.municipio || '/' || f.uf || ') - ' || fn_reais(a.valor_compra)
   FROM animal a JOIN fornecedor f ON f.id_fornecedor = a.id_fornecedor
 UNION ALL
-SELECT t.brinco, g.data_emissao, 3, 'GTA de ' || lower(g.tipo),
+SELECT t.brinco, g.data_emissao, 3, CASE g.tipo WHEN 'SAIDA' THEN 'GTA de saída' ELSE 'GTA de entrada' END,
        g.numero_gta || ': ' || g.origem || ' -> ' || g.destino || ' (' || lower(g.finalidade) || ')'
   FROM transita_com t JOIN gta g ON g.numero_gta = t.numero_gta
 UNION ALL
@@ -1437,7 +1449,7 @@ SELECT o.brinco, o.data_entrada, 4, 'Entrada em piquete',
   FROM ocupa o JOIN piquete pq ON pq.id_piquete = o.id_piquete
 UNION ALL
 SELECT p.brinco, p.data_pesagem, 5, 'Pesagem',
-       p.peso_kg || ' kg - ' || u.nome
+       fn_kg(p.peso_kg) || ' - ' || u.nome
   FROM pesagem p JOIN usuario u ON u.id_usuario = p.id_usuario
 UNION ALL
 SELECT r.brinco, r.data_aplicacao, 6, 'Aplicação sanitária',
@@ -1446,8 +1458,8 @@ SELECT r.brinco, r.data_aplicacao, 6, 'Aplicação sanitária',
   JOIN produto_sanitario ps ON ps.id_produto = r.id_produto
   JOIN usuario u            ON u.id_usuario = r.id_usuario
 UNION ALL
-SELECT b.brinco, b.data_baixa, 7, 'Baixa (' || lower(b.motivo) || ')',
-       COALESCE(v.comprador || ' - ' || v.peso_final_kg || ' kg - R$ ' || v.valor_venda, o.causa)
+SELECT b.brinco, b.data_baixa, 7, CASE b.motivo WHEN 'VENDA' THEN 'Baixa (venda)' ELSE 'Baixa (óbito)' END,
+       COALESCE(v.comprador || ' - ' || fn_kg(v.peso_final_kg) || ' - ' || fn_reais(v.valor_venda), o.causa)
   FROM baixa b
   LEFT JOIN venda v ON v.id_baixa = b.id_baixa
   LEFT JOIN obito o ON o.id_baixa = b.id_baixa;

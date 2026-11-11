@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
+import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro, Selecao } from '../../components/cadastro/FormularioCadastro'
 import { AvisoSucesso } from '../../components/ui/AvisoSucesso'
 import { EstadoDados } from '../../components/ui/EstadoDados'
@@ -90,7 +91,7 @@ function ListaAnimais() {
   }
 
   const colunas: Coluna<Animal>[] = [
-    { titulo: 'Brinco', valor: a => <Link className="animal-link" to={`/animais?ficha=${encodeURIComponent(a.brinco)}`}>{a.brinco}</Link> },
+    { titulo: 'Brinco', valor: a => <LinkAnimal brinco={a.brinco} /> },
     { titulo: 'Raça', valor: a => a.raca },
     // A categoria já indica o sexo (Bezerro/Bezerra, Garrote/Novilha, Boi/Vaca).
     { titulo: 'Categoria', valor: a => <span title={nomeSexo(a.sexo)}>{a.categoria}</span> },

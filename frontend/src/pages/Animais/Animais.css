@@ -8,8 +8,6 @@
 
 .sem-quebra { white-space: nowrap; }
 
-.animal-link { color: var(--color-primary); font-weight: 700; text-decoration: none; }
-.animal-link:hover { text-decoration: underline; }
 
 .ficha-voltar { display: inline-flex; align-items: center; gap: 6px; width: fit-content; color: var(--color-primary); font-size: 14px; font-weight: 600; text-decoration: none; }
 .ficha-voltar:hover { text-decoration: underline; }
@@ -21,7 +19,6 @@
 .ficha-dados { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px 24px; margin: 0; }
 .ficha-dados dt { color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
 .ficha-dados dd { margin: 4px 0 0; font-size: 15px; }
-.ficha-dados a { color: var(--color-primary); font-weight: 700; }
 
 .linha-tempo { position: relative; display: grid; gap: 18px; margin: 0; padding: 0 0 0 22px; list-style: none; }
 .linha-tempo::before { content: ''; position: absolute; top: 6px; bottom: 6px; left: 5px; width: 2px; background: var(--border-default); }
@@ -58,3 +55,28 @@
 .grafico-dica { position: absolute; display: grid; gap: 2px; min-width: 150px; padding: 8px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); box-shadow: 0 4px 14px rgba(48, 58, 50, .14); font-family: var(--font-functional); font-size: 12px; color: var(--color-text-secondary); text-align: center; transform: translate(-50%, calc(-100% - 14px)); pointer-events: none; white-space: nowrap; }
 .grafico-dica--abaixo { transform: translate(-50%, 14px); }
 .grafico-dica strong { color: var(--color-text); font-size: 15px; }
+
+/* Título da ficha com o botão de imprimir */
+.ficha-titulo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.ficha-imprimir { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; }
+.ficha-impressao { display: none; }
+
+/* Impressão / "Salvar como PDF": só a ficha, sem menu, botões ou cores de fundo */
+@media print {
+  @page { margin: 14mm; }
+  :root, html, body, #root, .app-shell, .app-body, .app-content { min-height: 0 !important; height: auto !important; background: #fff; }
+  .sidebar, .app-header, .skip-link, .ficha-voltar, .ficha-imprimir, .grafico-dica, .aviso-sucesso-area { display: none !important; }
+  .app-shell { display: block; }
+  .app-content { max-width: none !important; padding: 0 !important; }
+  .page-heading { margin-bottom: 16px; }
+  .ficha-impressao { display: block; padding-bottom: 8px; border-bottom: 1px solid #999; color: #444; font-size: 11px; }
+  .ficha { gap: 14px; }
+  .ficha .content-card { padding: 14px 16px; border-color: #bbb; border-radius: 6px; break-inside: avoid; }
+  .ficha .content-card:last-child { break-inside: auto; }
+  .linha-tempo li, .ficha-alerta, .tabela tr { break-inside: avoid; }
+  .ficha h2 { break-after: avoid; }
+  .tabela-rolagem { overflow: visible; }
+  .grafico svg { width: 100%; height: auto; }
+  .link-animal { color: inherit; }
+  .ficha-alerta, .grafico-resumo > div, .etiqueta { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
