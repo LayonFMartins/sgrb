@@ -10,7 +10,7 @@ import { Input } from '../../components/ui/Input'
 import { useAvisoSucesso } from '../../hooks/useAvisoSucesso'
 import { useDados } from '../../hooks/useDados'
 import type { Raca } from '../../types/animais'
-import type { Fornecedor } from '../../types/cadastros'
+import type { Fornecedor, PiqueteCadastro } from '../../types/cadastros'
 import { enviar, mensagemDeErro } from '../../utils/enviar'
 import { formatarData, formatarNumero, plural } from '../../utils/formatar'
 import '../../components/cadastro/Cadastro.css'
@@ -58,6 +58,7 @@ const real = (valor: number) => `R$ ${formatarNumero(valor, 2)}`
 export function ComprasPage() {
   const fornecedores = useDados<Fornecedor[]>('/fornecedores')
   const racas = useDados<Raca[]>('/racas')
+  const piquetes = useDados<PiqueteCadastro[]>('/piquetes')
   const sucesso = useAvisoSucesso()
   const hoje = new Date().toLocaleDateString('sv-SE') // AAAA-MM-DD no fuso local
 
@@ -65,11 +66,16 @@ export function ComprasPage() {
   const [dataCompra, setDataCompra] = useState(hoje)
   const [gta, setGta] = useState({ numero_gta: '', data_emissao: hoje, origem: '', destino: lerDestino(), finalidade: 'RECRIA' })
   const [animais, setAnimais] = useState<AnimalForm[]>([ANIMAL_INICIAL])
+  // null = ainda não escolhido: usa a quarentena, se existir. '' = não colocar em piquete agora.
+  const [piqueteEscolhido, setPiqueteEscolhido] = useState<string | null>(null)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
   const [registrada, setRegistrada] = useState<Registrada | null>(null)
 
   const fornecedor = fornecedores.dados?.find(f => String(f.id_fornecedor) === idFornecedor)
+  const quarentena = piquetes.dados?.find(p => p.nome.toLocaleLowerCase('pt-BR').includes('quarentena'))
+  const idPiquete = piqueteEscolhido ?? (quarentena ? String(quarentena.id_piquete) : '')
+  const piquete = piquetes.dados?.find(p => String(p.id_piquete) === idPiquete)
   const total = animais.reduce((soma, a) => soma + (Number(a.valor_compra) || 0), 0)
 
   function escolherFornecedor(id: string) {
@@ -99,6 +105,8 @@ export function ComprasPage() {
     if (!gta.numero_gta.trim()) return 'Informe o número da GTA de entrada.'
     if (!gta.data_emissao) return 'Informe a data de emissão da GTA.'
     if (!gta.origem.trim() || !gta.destino.trim()) return 'Informe a origem e o destino da GTA.'
+    if (piquete && piquete.vagas < animais.length)
+      return `O piquete ${piquete.nome} só tem ${plural(piquete.vagas, 'vaga', 'vagas')} para ${plural(animais.length, 'animal', 'animais')}.`
     const vistos = new Set<string>()
     for (const [i, a] of animais.entries()) {
       const n = `Animal ${i + 1}`
@@ -123,6 +131,7 @@ export function ComprasPage() {
     const corpo = {
       id_fornecedor: Number(idFornecedor),
       data_compra: dataCompra,
+      id_piquete: idPiquete ? Number(idPiquete) : null,
       gta: { ...gta, numero_gta: gta.numero_gta.trim(), origem: gta.origem.trim(), destino: gta.destino.trim() },
       animais: animais.map(a => ({
         brinco: a.brinco.trim(), sexo: a.sexo, data_nascimento: a.data_nascimento,
@@ -137,6 +146,7 @@ export function ComprasPage() {
         fornecedor: fornecedor?.nome_produtor ?? '', brincos: corpo.animais.map(a => a.brinco),
       })
       sucesso.mostrar(resposta.mensagem)
+      piquetes.recarregar() // a lotação mudou
       limpar()
     } catch (erroApi) {
       setErro(mensagemDeErro(erroApi))
@@ -150,6 +160,7 @@ export function ComprasPage() {
     setDataCompra(hoje)
     setGta(g => ({ numero_gta: '', data_emissao: hoje, origem: '', destino: g.destino, finalidade: 'RECRIA' }))
     setAnimais([animalVazio()])
+    setPiqueteEscolhido(null)
     setErro('')
   }
 
@@ -170,8 +181,9 @@ export function ComprasPage() {
       </p>
     </section>}
 
-    <EstadoDados carregando={fornecedores.carregando || racas.carregando} erro={fornecedores.erro || racas.erro}
-      recarregar={() => { fornecedores.recarregar(); racas.recarregar() }}>
+    <EstadoDados carregando={fornecedores.carregando || racas.carregando || piquetes.carregando}
+      erro={fornecedores.erro || racas.erro || piquetes.erro}
+      recarregar={() => { fornecedores.recarregar(); racas.recarregar(); piquetes.recarregar() }}>
       <form className="compra" onSubmit={registrar} noValidate>
         <section className="content-card" aria-labelledby="compra-dados">
           <h2 id="compra-dados">Dados da compra</h2>
@@ -184,7 +196,21 @@ export function ComprasPage() {
             </Selecao>
             <Input label="Data da compra" type="date" value={dataCompra} max={hoje} required
               onChange={e => setDataCompra(e.target.value)} />
+            <Selecao label="Piquete de entrada" value={idPiquete} onChange={e => setPiqueteEscolhido(e.target.value)}>
+              <option value="">Não colocar em piquete agora</option>
+              {piquetes.dados?.map(p => <option key={p.id_piquete} value={p.id_piquete}
+                disabled={p.situacao === 'Em descanso' || p.vagas === 0}>
+                {p.nome} · {p.situacao === 'Em descanso'
+                  ? `em descanso até ${formatarData(p.data_liberacao)}`
+                  : plural(p.vagas, 'vaga', 'vagas')}
+              </option>)}
+            </Selecao>
           </div>
+          <p className="cadastro-form__dica">
+            {piquete
+              ? `Os animais entram em ${piquete.nome} na data da compra. Depois, as mudanças de piquete são feitas em Movimentações.`
+              : 'Os animais ficam sem piquete até serem movimentados.'}
+          </p>
           {fornecedores.dados?.length === 0 && <p className="cadastro-form__dica">
             Nenhum fornecedor cadastrado. <Link to="/fornecedores">Cadastre o fornecedor</Link> antes de registrar a compra.
           </p>}
