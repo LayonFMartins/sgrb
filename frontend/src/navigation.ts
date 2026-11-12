@@ -8,6 +8,8 @@ import { FornecedoresPage } from './pages/Cadastros/FornecedoresPage'
 import { PiquetesPage } from './pages/Cadastros/PiquetesPage'
 import { ProdutosPage } from './pages/Cadastros/ProdutosPage'
 import { UsuariosPage } from './pages/Cadastros/UsuariosPage'
+import { RacasPage } from './pages/Cadastros/RacasPage'
+import { ComprasPage } from './pages/Compras/ComprasPage'
 
 interface NavigationItemBase {
   path: string
@@ -34,7 +36,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/movimentacoes', label: 'Movimentações', icon: ArrowLeftRight, futuro: true },
   ] },
   { id: 'operacoes', label: 'Operações', items: [
-    { path: '/compras', label: 'Compras', icon: ShoppingCart, permissao: 'compras.criar' },
+    { path: '/compras', label: 'Compras', icon: ShoppingCart, permissao: 'compras.criar', pagina: ComprasPage },
     { path: '/vendas-baixas', label: 'Vendas e baixas', icon: CircleMinus, futuro: true },
     { path: '/gta', label: 'Guias de trânsito (GTA)', icon: FileText, futuro: true },
   ] },
@@ -42,7 +44,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/fornecedores', label: 'Fornecedores', icon: Contact, permissao: 'fornecedores.visualizar', pagina: FornecedoresPage },
     { path: '/produtos-sanitarios', label: 'Produtos sanitários', icon: Pill, permissao: 'produtos.visualizar', pagina: ProdutosPage },
     { path: '/usuarios', label: 'Usuários', icon: Users, permissao: 'usuarios.visualizar', pagina: UsuariosPage },
-    { path: '/racas', label: 'Raças', icon: Tags, permissao: 'racas.visualizar' },
+    { path: '/racas', label: 'Raças', icon: Tags, permissao: 'racas.visualizar', pagina: RacasPage },
   ] },
   { id: 'analises', label: 'Análises', items: [
     { path: '/relatorios', label: 'Relatórios e consultas', icon: ChartBar, permissao: 'consultas.visualizar', pagina: RelatoriosPage },
