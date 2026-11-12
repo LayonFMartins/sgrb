@@ -1,0 +1,12 @@
+/* .seletor vem de Relatorios.css */
+.gta-filtros { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 20px; margin-bottom: 16px; }
+.gta-busca { flex: 0 1 340px; }
+
+.gta-trajeto { position: relative; display: grid; gap: 2px; min-width: 220px; } /* relative: segura o texto sr-only dentro da tabela */
+.gta-trajeto__destino { color: var(--color-text-secondary); }
+
+.gta-brincos { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; min-width: 160px; }
+.gta-brincos__qtd { color: var(--color-text-secondary); font-size: 13px; white-space: nowrap; }
+.gta-brincos__mais { padding: 0; border: 0; background: none; color: var(--color-primary); font-size: 13px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+.gta-numero { white-space: nowrap; }
