@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, CalendarClock, Printer, ShieldAlert, Syringe } from 'lucide-react'
+import { ArrowLeft, CalendarClock, ShieldAlert, Syringe } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useAuth } from '../../auth/AuthContext'
 import { LinkAnimal } from '../../components/animais/LinkAnimal'
+import { AcoesImpressao, CabecalhoImpressao } from '../../components/relatorios/Impressao'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
@@ -14,19 +14,14 @@ import { ETIQUETA_SITUACAO, idade, nomeSexo } from './animal'
 
 export function FichaAnimal({ brinco }: { brinco: string }) {
   const { dados: a, ...estado } = useDados<Ficha>(`/animais/${encodeURIComponent(brinco)}`)
-  const { usuario } = useAuth()
-  const emitidaEm = new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
 
   return <>
     <header className="page-heading">
-      <Link to="/animais" className="ficha-voltar"><ArrowLeft size={16} aria-hidden="true" />Voltar para a lista</Link>
-      {/* Só aparece no papel/PDF (ver @media print em Animais.css) */}
-      <p className="ficha-impressao">SGRB · Ficha de rastreabilidade do animal · emitida em {emitidaEm} por {usuario?.nome}</p>
+      <Link to="/animais" className="ficha-voltar nao-imprimir"><ArrowLeft size={16} aria-hidden="true" />Voltar para a lista</Link>
+      <CabecalhoImpressao titulo="Ficha de rastreabilidade do animal" />
       <div className="ficha-titulo">
         <h1>Animal {brinco}</h1>
-        {a && <button type="button" className="botao-secundario ficha-imprimir" onClick={() => window.print()}>
-          <Printer size={18} aria-hidden="true" />Imprimir ficha
-        </button>}
+        {a && <AcoesImpressao rotuloImprimir="Imprimir ficha" />}
       </div>
       {a && <p>{a.categoria} · {a.raca} · {idade(a.idade_meses)}{' '}
         <span className={`etiqueta etiqueta--${ETIQUETA_SITUACAO[a.situacao]}`}>{a.situacao}</span></p>}

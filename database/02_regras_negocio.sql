@@ -1,4 +1,4 @@
-﻿-- SGRB - regras de negócio (funções e triggers)
+-- SGRB - regras de negócio (funções e triggers)
 
 -- Idade em meses completos (atributo derivado IDADE)
 CREATE OR REPLACE FUNCTION fn_idade_meses(p_nascimento DATE, p_referencia DATE)

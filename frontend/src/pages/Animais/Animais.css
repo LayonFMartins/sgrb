@@ -56,27 +56,18 @@
 .grafico-dica--abaixo { transform: translate(-50%, 14px); }
 .grafico-dica strong { color: var(--color-text); font-size: 15px; }
 
-/* Título da ficha com o botão de imprimir */
+/* Título da ficha com o botão de imprimir (botões e regras gerais em components/relatorios/Impressao.css) */
 .ficha-titulo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
-.ficha-imprimir { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; }
-.ficha-impressao { display: none; }
 
-/* Impressão / "Salvar como PDF": só a ficha, sem menu, botões ou cores de fundo */
+/* Impressão da ficha: só o que é específico dela */
 @media print {
-  @page { margin: 14mm; }
-  :root, html, body, #root, .app-shell, .app-body, .app-content { min-height: 0 !important; height: auto !important; background: #fff; }
-  .sidebar, .app-header, .skip-link, .ficha-voltar, .ficha-imprimir, .grafico-dica, .aviso-sucesso-area { display: none !important; }
-  .app-shell { display: block; }
-  .app-content { max-width: none !important; padding: 0 !important; }
   .page-heading { margin-bottom: 16px; }
-  .ficha-impressao { display: block; padding-bottom: 8px; border-bottom: 1px solid #999; color: #444; font-size: 11px; }
+  .grafico-dica { display: none !important; }
   .ficha { gap: 14px; }
-  .ficha .content-card { padding: 14px 16px; border-color: #bbb; border-radius: 6px; break-inside: avoid; }
+  .ficha .content-card { break-inside: avoid; }
   .ficha .content-card:last-child { break-inside: auto; }
-  .linha-tempo li, .ficha-alerta, .tabela tr { break-inside: avoid; }
+  .linha-tempo li, .ficha-alerta { break-inside: avoid; }
   .ficha h2 { break-after: avoid; }
-  .tabela-rolagem { overflow: visible; }
   .grafico svg { width: 100%; height: auto; }
-  .link-animal { color: inherit; }
-  .ficha-alerta, .grafico-resumo > div, .etiqueta { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ficha-alerta, .grafico-resumo > div { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }

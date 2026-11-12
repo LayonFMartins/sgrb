@@ -11,3 +11,40 @@
 .seletor { display: inline-flex; width: fit-content; padding: 3px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-background); font-family: var(--font-functional); }
 .seletor__botao { padding: 7px 14px; border: 0; border-radius: 6px; background: transparent; color: var(--color-text-secondary); font-size: 13px; font-weight: 600; }
 .seletor__botao--ativo { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 2px rgba(48, 58, 50, .12); }
+
+/* Topo de cada relatório: título e explicação à esquerda, imprimir/exportar à direita */
+.consulta__topo { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 24px; }
+.consulta__topo .consulta__descricao { flex: 1 1 420px; }
+.consulta__filtro { font-weight: 600; }
+
+.consulta__filtros { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 20px; }
+.consulta__periodo { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.consulta__periodo .field { width: 170px; }
+.consulta__limpar { min-height: 44px; }
+
+/* Rastreio por lote */
+.rastreio-busca { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.rastreio-busca .field { flex: 0 1 340px; }
+.rastreio-busca .botao-secundario { min-height: 50px; }
+.rastreio-lotes { display: grid; gap: 12px; }
+.rastreio-lotes h3, .rastreio-resumo h3 { font-size: 16px; }
+.rastreio-resumo { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 24px; padding: 14px 16px; border-radius: var(--radius-control); background: var(--color-background); }
+.rastreio-resumo p { margin-top: 4px; font-size: 14px; }
+.rastreio-destino { display: grid; gap: 2px; min-width: 220px; }
+.link-botao { padding: 0; border: 0; background: none; color: var(--color-primary); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.sem-quebra { white-space: nowrap; }
+
+/* Resultado das vendas */
+.consulta-totais { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 0; }
+.consulta-totais > div { padding: 12px 14px; border-radius: var(--radius-control); background: var(--color-background); }
+.consulta-totais dt { color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.consulta-totais dd { margin: 4px 0 0; font-family: var(--font-functional); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.valor-negativo { color: var(--status-error); }
+
+@media print {
+  .consulta { border: 0; padding: 0; gap: 12px; }
+  .consulta__descricao h2 { font-size: 16px; }
+  .rastreio-resumo .acoes-impressao { display: none; }
+  .consulta-totais > div, .rastreio-resumo { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .painel-lotacao, .lotacao { break-inside: avoid; }
+}

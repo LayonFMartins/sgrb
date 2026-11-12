@@ -1,4 +1,4 @@
-﻿-- SGRB - criação das tabelas (PostgreSQL)
+-- SGRB - criação das tabelas (PostgreSQL)
 
 DROP TABLE IF EXISTS
     obito, venda, baixa, recebe, produto_sanitario, pesagem, funcionario, usuario,
@@ -1243,7 +1243,7 @@ COMMIT;
 -- SGRB - views das consultas
 
 DROP VIEW IF EXISTS
-    vw_linha_do_tempo, vw_campanhas_pendentes, vw_reforcos, vw_carencia,
+    vw_resultado_vendas, vw_rastreio_lote, vw_linha_do_tempo, vw_campanhas_pendentes, vw_reforcos, vw_carencia,
     vw_gmd_por_fornecedor, vw_gmd_por_raca, vw_ranking_gmd, vw_gmd_pesagens,
     vw_lotacao_piquete, vw_animal
 CASCADE;
@@ -1319,33 +1319,39 @@ SELECT brinco,
   FROM pesagem
 WINDOW w AS (PARTITION BY brinco ORDER BY data_pesagem);
 
--- GMD de cada animal no periodo todo (primeira ate ultima pesagem)
+-- GMD de cada animal entre a primeira e a ultima pesagem do periodo.
+-- Periodo nulo = todas as pesagens. Considera so animais em crescimento
+-- (menos de 24 meses na primeira pesagem do periodo).
+CREATE OR REPLACE FUNCTION fn_ranking_gmd(p_inicio DATE, p_fim DATE)
+RETURNS TABLE (posicao BIGINT, brinco VARCHAR, raca VARCHAR, categoria TEXT, fornecedor VARCHAR,
+               situacao TEXT, peso_inicial NUMERIC, peso_final NUMERIC, dias INTEGER, gmd_kg_dia NUMERIC)
+LANGUAGE sql STABLE AS $$
+    WITH extremos AS (
+        SELECT p.brinco,
+               min(p.data_pesagem) AS data_inicial,
+               max(p.data_pesagem) AS data_final,
+               (array_agg(p.peso_kg ORDER BY p.data_pesagem ASC))[1]  AS peso_inicial,
+               (array_agg(p.peso_kg ORDER BY p.data_pesagem DESC))[1] AS peso_final
+          FROM pesagem p
+         WHERE (p_inicio IS NULL OR p.data_pesagem >= p_inicio)
+           AND (p_fim    IS NULL OR p.data_pesagem <= p_fim)
+         GROUP BY p.brinco
+        HAVING count(*) >= 2
+    )
+    SELECT RANK() OVER (ORDER BY (e.peso_final - e.peso_inicial) / (e.data_final - e.data_inicial) DESC),
+           e.brinco, va.raca, va.categoria, va.fornecedor, va.situacao,
+           e.peso_inicial, e.peso_final,
+           e.data_final - e.data_inicial,
+           round((e.peso_final - e.peso_inicial) / (e.data_final - e.data_inicial), 3)
+      FROM extremos e
+      JOIN vw_animal va ON va.brinco = e.brinco
+      JOIN animal a     ON a.brinco  = e.brinco
+     WHERE fn_idade_meses(a.data_nascimento, e.data_inicial) < 24;
+$$;
+
+-- Ranking com todas as pesagens
 CREATE VIEW vw_ranking_gmd AS
-WITH extremos AS (
-    SELECT brinco,
-           min(data_pesagem) AS data_inicial,
-           max(data_pesagem) AS data_final,
-           (array_agg(peso_kg ORDER BY data_pesagem ASC))[1]  AS peso_inicial,
-           (array_agg(peso_kg ORDER BY data_pesagem DESC))[1] AS peso_final,
-           count(*) AS pesagens
-      FROM pesagem
-     GROUP BY brinco
-    HAVING count(*) >= 2
-)
-SELECT RANK() OVER (ORDER BY (e.peso_final - e.peso_inicial) / (e.data_final - e.data_inicial) DESC) AS posicao,
-       e.brinco,
-       va.raca,
-       va.categoria,
-       va.fornecedor,
-       va.situacao,
-       e.peso_inicial,
-       e.peso_final,
-       e.data_final - e.data_inicial                                        AS dias,
-       round((e.peso_final - e.peso_inicial) / (e.data_final - e.data_inicial), 3) AS gmd_kg_dia
-  FROM extremos e
-  JOIN vw_animal va ON va.brinco = e.brinco
-  JOIN animal a     ON a.brinco  = e.brinco
- WHERE fn_idade_meses(a.data_nascimento, e.data_inicial) < 24;
+SELECT * FROM fn_ranking_gmd(NULL, NULL);
 
 CREATE VIEW vw_gmd_por_raca AS
 SELECT raca,
@@ -1479,3 +1485,62 @@ SELECT b.brinco, b.data_baixa, 7, CASE b.motivo WHEN 'VENDA' THEN 'Baixa (venda)
 -- Reforcos atrasados e vacinacoes obrigatorias pendentes
 
 -- Crias de uma matriz
+
+-- Rastreio por lote de medicamento: quem recebeu o lote, quem aplicou,
+-- onde o animal esta hoje e, se ja saiu da fazenda, para onde foi (GTA de saida).
+CREATE VIEW vw_rastreio_lote AS
+SELECT r.lote_medicamento AS lote,
+       ps.nome            AS produto,
+       r.data_aplicacao,
+       r.num_dose,
+       u.nome             AS responsavel,
+       va.brinco,
+       va.raca,
+       va.categoria,
+       va.situacao,
+       va.piquete_atual,
+       b.data_baixa,
+       CASE b.motivo WHEN 'VENDA' THEN v.comprador WHEN 'OBITO' THEN 'Óbito: ' || o.causa END AS destino_final,
+       gs.numero_gta      AS gta_saida,
+       gs.destino         AS destino_gta
+  FROM recebe r
+  JOIN produto_sanitario ps ON ps.id_produto = r.id_produto
+  JOIN usuario u            ON u.id_usuario  = r.id_usuario
+  JOIN vw_animal va         ON va.brinco     = r.brinco
+  LEFT JOIN baixa b ON b.brinco = r.brinco
+  LEFT JOIN venda v ON v.id_baixa = b.id_baixa
+  LEFT JOIN obito o ON o.id_baixa = b.id_baixa
+  LEFT JOIN LATERAL (
+        SELECT g.numero_gta, g.destino
+          FROM transita_com t JOIN gta g ON g.numero_gta = t.numero_gta
+         WHERE t.brinco = r.brinco AND g.tipo = 'SAIDA'
+         ORDER BY g.data_emissao DESC
+         LIMIT 1) gs ON TRUE;
+
+-- Resultado de cada animal vendido: custo de aquisicao, valor de venda,
+-- tempo na fazenda e ganho de peso. Nascidos na fazenda nao tem custo de compra.
+CREATE VIEW vw_resultado_vendas AS
+SELECT a.brinco,
+       va.raca,
+       va.origem,
+       va.fornecedor,
+       COALESCE(a.data_compra, a.data_nascimento)                 AS data_entrada,
+       b.data_baixa                                               AS data_venda,
+       b.data_baixa - COALESCE(a.data_compra, a.data_nascimento)  AS dias_na_fazenda,
+       v.comprador,
+       a.valor_compra,
+       v.valor_venda,
+       v.valor_venda - COALESCE(a.valor_compra, 0)                AS margem_bruta,
+       pi.peso_kg                                                 AS peso_entrada,
+       v.peso_final_kg                                            AS peso_saida,
+       v.peso_final_kg - pi.peso_kg                               AS ganho_kg,
+       round(v.valor_venda / v.peso_final_kg, 2)                  AS valor_por_kg
+  FROM baixa b
+  JOIN venda v      ON v.id_baixa = b.id_baixa
+  JOIN animal a     ON a.brinco   = b.brinco
+  JOIN vw_animal va ON va.brinco  = b.brinco
+  LEFT JOIN LATERAL (
+        SELECT p.peso_kg FROM pesagem p
+         WHERE p.brinco = b.brinco
+         ORDER BY p.data_pesagem
+         LIMIT 1) pi ON TRUE;
