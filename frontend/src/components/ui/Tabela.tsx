@@ -5,6 +5,8 @@ export interface Coluna<T> {
   titulo: string
   valor: (linha: T) => ReactNode
   alinhar?: 'esquerda' | 'direita'
+  // Valor em texto para exportar (CSV). Sem ele, usa o próprio valor quando é texto ou número.
+  csv?: (linha: T) => string | number | null | undefined
 }
 
 // Tabela simples e reutilizável. Em telas pequenas, rola na horizontal.

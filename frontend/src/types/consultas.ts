@@ -72,3 +72,46 @@ export interface Painel {
   reforcos_atrasados: Reforco[]
   campanhas_pendentes: Campanha[]
 }
+
+export interface Lote {
+  lote: string
+  produto: string
+  animais: number
+  primeira_aplicacao: string
+  ultima_aplicacao: string
+}
+
+export interface Rastreio {
+  lote: string
+  produto: string
+  data_aplicacao: string
+  num_dose: number
+  responsavel: string
+  brinco: string
+  raca: string
+  categoria: string
+  situacao: 'Ativo' | 'Vendido' | 'Óbito'
+  piquete_atual: string | null
+  data_baixa: string | null
+  destino_final: string | null
+  gta_saida: string | null
+  destino_gta: string | null
+}
+
+export interface ResultadoVenda {
+  brinco: string
+  raca: string
+  origem: string
+  fornecedor: string | null
+  data_entrada: string
+  data_venda: string
+  dias_na_fazenda: number
+  comprador: string
+  valor_compra: number | null
+  valor_venda: number
+  margem_bruta: number
+  peso_entrada: number | null
+  peso_saida: number
+  ganho_kg: number | null
+  valor_por_kg: number
+}

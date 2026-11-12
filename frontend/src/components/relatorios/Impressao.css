@@ -1,0 +1,24 @@
+/* Botões de imprimir/exportar e regras gerais de impressão ("Salvar como PDF") */
+.acoes-impressao { display: flex; flex-wrap: wrap; gap: 8px; }
+.acoes-impressao__botao { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; }
+.so-impressao { display: none; }
+
+@media print {
+  @page { margin: 14mm; }
+  @page paisagem { size: A4 landscape; margin: 12mm; }
+  :root, html, body, #root, .app-shell, .app-body, .app-content { min-height: 0 !important; height: auto !important; background: #fff; }
+  .sidebar, .app-header, .skip-link, .nao-imprimir, .aviso-sucesso-area { display: none !important; }
+  .app-shell { display: block; }
+  .app-content { max-width: none !important; padding: 0 !important; }
+  .so-impressao { display: block; }
+  .cabecalho-impressao { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #999; color: #444; font-size: 11px; }
+  .content-card { padding: 14px 16px; border-color: #bbb; border-radius: 6px; box-shadow: none; }
+  .tabela-rolagem { overflow: visible; border-color: #bbb; }
+  .tabela tr { break-inside: avoid; }
+  .tabela { font-size: 11px; }
+  .tabela th, .tabela td { padding: 6px 8px; }
+  /* Relatórios com muitas colunas saem em paisagem */
+  .impressao-paisagem { page: paisagem; }
+  .link-animal { color: inherit; }
+  .etiqueta { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
