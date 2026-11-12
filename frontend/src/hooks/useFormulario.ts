@@ -78,5 +78,6 @@ export function useAcaoLinha() {
     }
   }
 
-  return { aviso, ocupado, executar, limparAviso: () => setAviso('') }
+  // mostrarAviso: para avisar sem chamar a API (ex.: "raça em uso, não pode excluir").
+  return { aviso, ocupado, executar, mostrarAviso: setAviso, limparAviso: () => setAviso('') }
 }
