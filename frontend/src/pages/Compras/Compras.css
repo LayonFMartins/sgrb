@@ -1,0 +1,11 @@
+.compra { display: grid; gap: 20px; }
+
+.compra-animais__topo { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+
+.compra-animal { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px 16px; align-items: end; margin: 0; padding: 16px; border: 1px solid var(--border-default); border-radius: var(--radius-control); }
+.compra-animal legend { padding: 0 6px; font-size: 13px; font-weight: 600; color: var(--color-text-secondary); }
+.compra-animal__remover { justify-self: start; }
+.compra-animais__adicionar { width: fit-content; }
+
+.compra-registrada { border-color: #b9cdb3; background: #f3f7f1; }
+.compra-registrada__brincos { display: flex; flex-wrap: wrap; gap: 8px 14px; }
