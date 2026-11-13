@@ -22,6 +22,8 @@ export interface PiqueteCadastro {
   vagas: number
   situacao: 'Em uso' | 'Em descanso' | 'Disponível'
   data_liberacao: string | null
+  // Animais diferentes que já passaram pelo piquete (com histórico não dá para excluir).
+  animais_historico: number
 }
 
 export type TipoProduto = 'VACINA' | 'VERMIFUGO' | 'ANTIBIOTICO'
@@ -37,6 +39,8 @@ export interface ProdutoSanitario {
   sexo_alvo: 'M' | 'F' | null
   idade_min_meses: number | null
   idade_max_meses: number | null
+  // Aplicações já registradas (com aplicações não dá para excluir).
+  aplicacoes: number
 }
 
 export interface UsuarioCadastro {

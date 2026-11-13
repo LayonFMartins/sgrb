@@ -1,6 +1,15 @@
 .tabela-rolagem { overflow-x: auto; border: 1px solid var(--border-default); border-radius: var(--radius-control); }
 .tabela { width: 100%; border-collapse: collapse; font-family: var(--font-functional); font-size: 14px; }
 .tabela th { padding: 12px 14px; background: var(--color-background); color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-align: left; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+/* Título clicável para ordenar (o th continua com o mesmo visual) */
+.tabela th[aria-sort] { padding: 0; }
+.tabela__ordenar { display: inline-flex; align-items: center; gap: 6px; width: 100%; padding: 12px 14px; border: 0; background: transparent; color: inherit; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; }
+.tabela--direita .tabela__ordenar { justify-content: flex-end; }
+.tabela__ordenar svg { flex-shrink: 0; opacity: .45; }
+.tabela__ordenar:hover { color: var(--color-primary); }
+.tabela__ordenar:hover svg, .tabela__ordenar--ativa svg { opacity: 1; }
+.tabela__ordenar--ativa { color: var(--color-primary); }
+.tabela__ordenar:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
 .tabela td { padding: 12px 14px; border-top: 1px solid var(--border-default); vertical-align: middle; }
 .tabela tbody tr:hover { background: var(--row-hover); }
 .tabela .tabela--direita { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }

@@ -12,6 +12,11 @@ const NAO_ENCONTRADO = 'Produto não encontrado.';
 const COLUNAS = `id_produto, nome, tipo, doenca_alvo, carencia_dias, num_doses,
                  intervalo_reforco_dias, sexo_alvo, idade_min_meses, idade_max_meses`;
 
+// Quantas aplicacoes do produto ja foram registradas (tabela recebe).
+// Se for maior que zero, o banco nao deixa excluir (chave estrangeira).
+const APLICACOES = `(SELECT count(*)::int FROM recebe r
+                      WHERE r.id_produto = produto_sanitario.id_produto) AS aplicacoes`;
+
 function lerProduto(body: Record<string, unknown> | undefined) {
   const b = body ?? {};
   const sexo = textoOpcional(b.sexo_alvo);
@@ -37,7 +42,7 @@ function valores(p: ReturnType<typeof lerProduto>) {
 produtosRouter.get('/', exigirPermissao('produtos.visualizar'), async (req, res) => {
   const tipo = req.query.tipo ? String(req.query.tipo).toUpperCase() : null;
   const { rows } = await pool.query(
-    `SELECT ${COLUNAS}
+    `SELECT ${COLUNAS}, ${APLICACOES}
        FROM produto_sanitario
       WHERE $1::text IS NULL OR tipo = $1
       ORDER BY nome`,
@@ -49,7 +54,7 @@ produtosRouter.get('/', exigirPermissao('produtos.visualizar'), async (req, res)
 // GET /api/produtos/:id
 produtosRouter.get('/:id', exigirPermissao('produtos.visualizar'), async (req, res) => {
   const id = idDaRota(req.params.id, NAO_ENCONTRADO);
-  const { rows } = await pool.query(`SELECT ${COLUNAS} FROM produto_sanitario WHERE id_produto = $1`, [id]);
+  const { rows } = await pool.query(`SELECT ${COLUNAS}, ${APLICACOES} FROM produto_sanitario WHERE id_produto = $1`, [id]);
   if (!rows[0]) throw new ErroHttp(404, NAO_ENCONTRADO);
   res.json(rows[0]);
 });
