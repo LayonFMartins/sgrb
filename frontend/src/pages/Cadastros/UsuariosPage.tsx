@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Pencil, Plus, UserCheck, UserX } from 'lucide-react'
 import { useAuth } from '../../auth/AuthContext'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
+import { CampoBusca } from '../../components/cadastro/CampoBusca'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro, Selecao } from '../../components/cadastro/FormularioCadastro'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Input } from '../../components/ui/Input'
@@ -9,6 +11,7 @@ import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
 import { useAcaoLinha, useFormulario } from '../../hooks/useFormulario'
 import type { UsuarioCadastro } from '../../types/cadastros'
+import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
 
 const VAZIO = { nome: '', funcao: '', tipo: 'FUNCIONARIO', acesso: false, email: '', senha: '' }
@@ -22,6 +25,9 @@ export function UsuariosPage() {
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
   const f = form.valores
+  const [busca, setBusca] = useState('')
+  const visiveis = (dados ?? []).filter(u => combina(busca, u.nome, u.funcao, u.email,
+    u.tipo === 'PROPRIETARIO' ? 'Proprietário' : 'Funcionário', u.ativo ? 'Ativo' : 'Inativo'))
   // Na edição de quem já tem login, a senha em branco mantém a atual.
   const editandoComLogin = form.editando && dados?.find(u => u.id_usuario === form.editandoId)?.tem_login
 
@@ -110,10 +116,14 @@ export function UsuariosPage() {
     </FormularioCadastro>}
 
     <section className="content-card" aria-label="Lista de usuários">
+      <div className="cadastro-filtros-linha">
+        <CampoBusca valor={busca} onChange={setBusca} placeholder="Nome, função, perfil ou situação" />
+      </div>
       <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
       <EstadoDados {...estado}>
-        {dados && <Tabela legenda="Usuários" colunas={colunas} linhas={dados}
-          chave={u => String(u.id_usuario)} vazio="Nenhum usuário cadastrado." />}
+        {dados && <Tabela legenda="Usuários" colunas={colunas} linhas={visiveis}
+          chave={u => String(u.id_usuario)}
+          vazio={busca.trim() ? 'Nenhum usuário encontrado para essa busca.' : 'Nenhum usuário cadastrado.'} />}
       </EstadoDados>
     </section>
   </>

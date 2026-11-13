@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
+import { CampoBusca } from '../../components/cadastro/CampoBusca'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro, Selecao } from '../../components/cadastro/FormularioCadastro'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Input } from '../../components/ui/Input'
@@ -9,6 +10,7 @@ import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
 import { useAcaoLinha, useFormulario } from '../../hooks/useFormulario'
 import type { ProdutoSanitario, TipoProduto } from '../../types/cadastros'
+import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
 import { plural } from '../../utils/formatar'
 import '../Relatorios/Relatorios.css'
@@ -40,6 +42,8 @@ export function ProdutosPage() {
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
   const f = form.valores
+  const [busca, setBusca] = useState('')
+  const visiveis = (dados ?? []).filter(p => combina(busca, p.nome, p.doenca_alvo, nomeTipo(p.tipo)))
 
   function salvar() {
     form.executar(
@@ -120,16 +124,20 @@ export function ProdutosPage() {
     </FormularioCadastro>}
 
     <section className="content-card" aria-label="Lista de produtos sanitários">
-      <div className="seletor cadastro-filtros" role="group" aria-label="Filtrar por tipo">
-        {[{ id: '' as const, rotulo: 'Todos' }, ...TIPOS].map(t =>
-          <button key={t.id} type="button" aria-pressed={tipo === t.id}
-            className={`seletor__botao${tipo === t.id ? ' seletor__botao--ativo' : ''}`}
-            onClick={() => setTipo(t.id)}>{t.rotulo}</button>)}
+      <div className="cadastro-filtros-linha">
+        <div className="seletor" role="group" aria-label="Filtrar por tipo">
+          {[{ id: '' as const, rotulo: 'Todos' }, ...TIPOS].map(t =>
+            <button key={t.id} type="button" aria-pressed={tipo === t.id}
+              className={`seletor__botao${tipo === t.id ? ' seletor__botao--ativo' : ''}`}
+              onClick={() => setTipo(t.id)}>{t.rotulo}</button>)}
+        </div>
+        <CampoBusca valor={busca} onChange={setBusca} placeholder="Nome do produto ou doença alvo" />
       </div>
       <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
       <EstadoDados {...estado}>
-        {dados && <Tabela legenda="Produtos sanitários" colunas={colunas} linhas={dados}
-          chave={p => String(p.id_produto)} vazio="Nenhum produto cadastrado." />}
+        {dados && <Tabela legenda="Produtos sanitários" colunas={colunas} linhas={visiveis}
+          chave={p => String(p.id_produto)}
+          vazio={busca.trim() ? 'Nenhum produto encontrado para essa busca.' : 'Nenhum produto cadastrado.'} />}
       </EstadoDados>
     </section>
   </>
