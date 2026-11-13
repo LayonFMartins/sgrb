@@ -470,18 +470,25 @@ function TotaisVendas({ vendas }: { vendas: ResultadoVenda[] }) {
   const comprados = vendas.filter(v => v.valor_compra !== null)
   const custoComprados = comprados.reduce((t, v) => t + (v.valor_compra ?? 0), 0)
   const margemComprados = comprados.reduce((t, v) => t + v.margem_bruta, 0)
-  const itens: { rotulo: string; valor: string; detalhe: string; destaque?: boolean }[] = [
-    { rotulo: 'Receita', valor: real(receita), detalhe: plural(vendas.length, 'animal vendido', 'animais vendidos') },
-    { rotulo: 'Margem bruta', valor: real(margem), destaque: true,
-      detalhe: custoComprados > 0 ? `+${formatarNumero((margemComprados / custoComprados) * 100, 1)}% sobre o custo de compra` : 'sem custo de compra' },
+  const dias = vendas.map(v => v.dias_na_fazenda)
+  const pctCompra = custoComprados > 0 ? (margemComprados / custoComprados) * 100 : null
+  // Cada cartão: valor principal e explicações que se referem a ele.
+  const itens: { rotulo: string; valor: string; detalhes: string[]; destaque?: boolean }[] = [
+    { rotulo: 'Receita', valor: real(receita), detalhes: [plural(vendas.length, 'animal vendido', 'animais vendidos')] },
+    { rotulo: 'Margem bruta', valor: real(margem), destaque: true, detalhes: [
+      ...(vendas.length > 1 ? [`média de ${real(margem / vendas.length)} por animal`] : []),
+      pctCompra === null ? 'sem custo de compra' : `${pctCompra >= 0 ? '+' : ''}${formatarNumero(pctCompra, 1)}% sobre o custo de compra`,
+    ] },
     { rotulo: 'Tempo médio na fazenda', valor: tempo(Math.round(soma(v => v.dias_na_fazenda) / vendas.length)),
-      detalhe: `média de ${real(margem / vendas.length)} por animal` },
+      detalhes: [Math.min(...dias) === Math.max(...dias)
+        ? 'da entrada na fazenda até a venda'
+        : `de ${tempo(Math.min(...dias))} a ${tempo(Math.max(...dias))}`] },
     { rotulo: 'Preço médio', valor: `R$ ${formatarNumero(receita / soma(v => v.peso_saida), 2)}/kg`,
-      detalhe: `${formatarNumero(soma(v => v.peso_saida), 1)} kg vendidos` },
+      detalhes: [`${formatarNumero(soma(v => v.peso_saida), 1)} kg vendidos`] },
   ]
   return <dl className="consulta-totais">
     {itens.map(i => <div key={i.rotulo} className={i.destaque ? 'consulta-totais__destaque' : undefined}>
-      <dt>{i.rotulo}</dt><dd>{i.valor}</dd><p>{i.detalhe}</p>
+      <dt>{i.rotulo}</dt><dd>{i.valor}</dd>{i.detalhes.map(d => <p key={d}>{d}</p>)}
     </div>)}
   </dl>
 }

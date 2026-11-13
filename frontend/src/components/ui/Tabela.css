@@ -2,16 +2,16 @@
 .tabela { width: 100%; border-collapse: collapse; font-family: var(--font-functional); font-size: 14px; }
 .tabela th { padding: 12px 14px; background: var(--color-background); color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-align: left; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
 .tabela td { padding: 12px 14px; border-top: 1px solid var(--border-default); vertical-align: middle; }
-.tabela tbody tr:hover { background: #fcfbf7; }
+.tabela tbody tr:hover { background: var(--row-hover); }
 .tabela .tabela--direita { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tabela-vazia { padding: 20px; border: 1px dashed var(--border-default); border-radius: var(--radius-control); color: var(--color-text-secondary); text-align: center; }
 
 .etiqueta { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-.etiqueta--ok { background: #e1e8dc; color: var(--color-primary); }
-.etiqueta--alerta { background: #f6e7d6; color: #7a4a22; }
-.etiqueta--erro { background: #f6dedb; color: var(--status-error); }
+.etiqueta--ok { background: var(--tag-ok-bg); color: var(--tag-ok-text); }
+.etiqueta--alerta { background: var(--tag-alert-bg); color: var(--tag-alert-text); }
+.etiqueta--erro { background: var(--tag-error-bg); color: var(--tag-error-text); }
 .etiqueta--neutra { background: var(--color-background); color: var(--color-text-secondary); }
 
 .estado-carregando, .estado-erro { padding: 20px; border-radius: var(--radius-control); background: var(--color-surface); border: 1px solid var(--border-default); color: var(--color-text-secondary); }
-.estado-erro { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-color: #e6b8b2; color: var(--status-error); }
+.estado-erro { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-color: var(--alert-error-border); color: var(--status-error); }
 .estado-erro button { padding: 8px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-primary); font-weight: 600; }

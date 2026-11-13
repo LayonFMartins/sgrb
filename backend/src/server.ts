@@ -14,6 +14,7 @@ import { produtosRouter } from './routes/produtos.js';
 import { usuariosRouter } from './routes/usuarios.js';
 import { consultasRouter } from './routes/consultas.js';
 import { gtaRouter } from './routes/gta.js';
+import { sistemaRouter } from './routes/sistema.js';
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use('/api/racas', racasRouter);
 app.use('/api/animais', animaisRouter);
 app.use('/api/compras', comprasRouter);
 app.use('/api/gta', gtaRouter);
+app.use('/api/sistema', sistemaRouter);
 app.use('/api/fornecedores', fornecedoresRouter);
 app.use('/api/piquetes', piquetesRouter);
 app.use('/api/produtos', produtosRouter);
