@@ -68,8 +68,13 @@ export function ProdutosPage() {
   }
 
   async function excluir(p: ProdutoSanitario) {
+    // Mesmo aviso da tela de Raças: explica o motivo sem nem chamar a API.
+    if (p.aplicacoes > 0) {
+      linha.mostrarAviso(`${p.nome} não pode ser excluído: ${plural(p.aplicacoes, 'aplicação já foi registrada', 'aplicações já foram registradas')} com ele.`)
+      return
+    }
     if (!(await confirmar({ titulo: 'Excluir produto?', confirmar: 'Excluir', perigo: true,
-      mensagem: `${p.nome} será removido do cadastro. Produtos já aplicados em animais não podem ser excluídos.` }))) return
+      mensagem: `${p.nome} será removido do cadastro.` }))) return
     linha.executar(() => enviar(`/produtos/${p.id_produto}`, 'DELETE'), estado.recarregar)
   }
 
