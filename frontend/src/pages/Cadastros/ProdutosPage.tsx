@@ -14,6 +14,9 @@ import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
 import { plural } from '../../utils/formatar'
 import '../Relatorios/Relatorios.css'
+import { useParametro } from '../../hooks/useParametro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { Vazio } from '../../components/ui/Vazio'
 
 const TIPOS: { id: TipoProduto; rotulo: string }[] = [
   { id: 'VACINA', rotulo: 'Vacina' },
@@ -41,8 +44,9 @@ export function ProdutosPage() {
   const { pode } = usePermissions()
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
+  const confirmar = useConfirmacao()
   const f = form.valores
-  const [busca, setBusca] = useState('')
+  const [busca, setBusca] = useParametro('busca')
   const visiveis = (dados ?? []).filter(p => combina(busca, p.nome, p.doenca_alvo, nomeTipo(p.tipo)))
 
   function salvar() {
@@ -63,8 +67,9 @@ export function ProdutosPage() {
     })
   }
 
-  function excluir(p: ProdutoSanitario) {
-    if (!window.confirm(`Excluir o produto ${p.nome}?`)) return
+  async function excluir(p: ProdutoSanitario) {
+    if (!(await confirmar({ titulo: 'Excluir produto?', confirmar: 'Excluir', perigo: true,
+      mensagem: `${p.nome} será removido do cadastro. Produtos já aplicados em animais não podem ser excluídos.` }))) return
     linha.executar(() => enviar(`/produtos/${p.id_produto}`, 'DELETE'), estado.recarregar)
   }
 
@@ -137,7 +142,9 @@ export function ProdutosPage() {
       <EstadoDados {...estado}>
         {dados && <Tabela legenda="Produtos sanitários" colunas={colunas} linhas={visiveis}
           chave={p => String(p.id_produto)}
-          vazio={busca.trim() ? 'Nenhum produto encontrado para essa busca.' : 'Nenhum produto cadastrado.'} />}
+          vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')}
+            titulo="Nenhum produto cadastrado ainda" texto="Vacinas, vermífugos e medicamentos usados no rebanho, com carência e intervalo de reforço."
+            acao={!form.aberto && { rotulo: 'Cadastrar o primeiro produto', permissao: 'produtos.criar', onClick: form.abrirNovo }} />} />}
       </EstadoDados>
     </section>
   </>

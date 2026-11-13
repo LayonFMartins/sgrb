@@ -30,6 +30,11 @@ a.painel-indicador:hover { border-color: var(--color-primary); }
   .painel-numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .painel-alertas { grid-template-columns: 1fr; }
 }
+/* Celular: os 4 indicadores em grade 2x2, mais compactos, para os alertas aparecerem sem rolar */
 @media (max-width: 560px) {
-  .painel-numeros { grid-template-columns: 1fr; }
+  .painel-numeros { gap: 10px; }
+  .painel-rebanho, .painel-indicador { gap: 4px; padding: 14px; }
+  .painel-rebanho h2, .painel-indicador h2 { gap: 6px; font-size: 12px; }
+  .painel-rebanho strong, .painel-indicador strong { font-size: 28px; }
+  .painel-rebanho p, .painel-indicador p { font-size: 12px; line-height: 1.4; }
 }

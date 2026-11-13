@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
@@ -19,6 +18,9 @@ import { FichaAnimal } from './FichaAnimal'
 import { ETIQUETA_SITUACAO, idade, nomeSexo } from './animal'
 import '../Relatorios/Relatorios.css'
 import './Animais.css'
+import { useParametro } from '../../hooks/useParametro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { Vazio } from '../../components/ui/Vazio'
 
 const VAZIO = { brinco: '', sexo: 'F', data_nascimento: '', id_raca: '', brinco_mae: '' }
 
@@ -42,10 +44,13 @@ function ListaAnimais() {
   const { pode } = usePermissions()
   const form = useFormulario<typeof VAZIO, string>(VAZIO)
   const linha = useAcaoLinha()
+  const confirmar = useConfirmacao()
   const sucesso = useAvisoSucesso()
   const f = form.valores
-  const [filtro, setFiltro] = useState<Situacao | 'Todos'>('Ativo')
-  const [busca, setBusca] = useState('')
+  const [situacao, setSituacao] = useParametro('situacao', 'Ativo')
+  const filtro = (FILTROS.some(f => f.id === situacao) ? situacao : 'Ativo') as Situacao | 'Todos'
+  const setFiltro = (valor: Situacao | 'Todos') => setSituacao(valor)
+  const [busca, setBusca] = useParametro('busca')
 
   const animais = dados ?? []
   const termo = busca.trim().toLocaleLowerCase('pt-BR')
@@ -84,8 +89,9 @@ function ListaAnimais() {
     })
   }
 
-  function excluir(a: Animal) {
-    if (!window.confirm(`Excluir o animal ${a.brinco}? Todo o histórico dele (pesagens, aplicações, movimentações) também será apagado.`)) return
+  async function excluir(a: Animal) {
+    if (!(await confirmar({ titulo: `Excluir o animal ${a.brinco}?`, confirmar: 'Excluir animal', perigo: true,
+      mensagem: 'Todo o histórico dele (pesagens, aplicações e movimentações) também será apagado. Esta ação não pode ser desfeita.' }))) return
     linha.executar(() => enviar(`/animais/${encodeURIComponent(a.brinco)}`, 'DELETE'),
       () => { estado.recarregar(); sucesso.mostrar(`Animal ${a.brinco} excluído.`) })
   }
@@ -154,7 +160,7 @@ function ListaAnimais() {
         <div className="seletor" role="group" aria-label="Filtrar por situação">
           {FILTROS.map(s => <button key={s.id} type="button" aria-pressed={filtro === s.id}
             className={`seletor__botao${filtro === s.id ? ' seletor__botao--ativo' : ''}`}
-            onClick={() => setFiltro(s.id)}>{s.rotulo} <span className="seletor__qtd">{total(s.id)}</span></button>)}
+            onClick={() => setFiltro(s.id)}>{s.rotulo}{dados && <> <span className="seletor__qtd">{total(s.id)}</span></>}</button>)}
         </div>
         <Input label="Buscar" className="animais-busca" type="search" value={busca} placeholder="Brinco, raça, categoria ou piquete"
           icon={<Search size={16} />} onChange={e => setBusca(e.target.value)} />
@@ -162,7 +168,12 @@ function ListaAnimais() {
       <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
       <EstadoDados {...estado}>
         {dados && <Tabela legenda="Animais" colunas={colunas} linhas={visiveis} chave={a => a.brinco}
-          vazio={termo ? 'Nenhum animal encontrado para essa busca.' : 'Nenhum animal nesta situação.'} />}
+          vazio={animais.length === 0
+            ? <Vazio titulo="Nenhum animal no rebanho ainda" texto="Registre os nascidos na fazenda aqui, ou os comprados pela tela de Compras (junto com a GTA)."
+              acao={!form.aberto && { rotulo: 'Registrar o primeiro animal', permissao: 'animais.criar', onClick: form.abrirNovo }} />
+            : <Vazio busca={busca} onLimparBusca={() => setBusca('')}
+              titulo={`Nenhum animal ${filtro === 'Todos' ? '' : FILTROS.find(s => s.id === filtro)?.rotulo.toLocaleLowerCase('pt-BR')}`.trim()}
+              texto="Escolha outra situação nos filtros acima." />} />}
       </EstadoDados>
     </section>
     <AvisoSucesso {...sucesso} />

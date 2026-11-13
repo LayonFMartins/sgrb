@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
@@ -15,6 +14,9 @@ import type { Raca } from '../../types/animais'
 import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
 import { plural } from '../../utils/formatar'
+import { useParametro } from '../../hooks/useParametro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { Vazio } from '../../components/ui/Vazio'
 
 const VAZIO = { nome: '' }
 
@@ -23,9 +25,10 @@ export function RacasPage() {
   const { pode } = usePermissions()
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
+  const confirmar = useConfirmacao()
   const sucesso = useAvisoSucesso()
   const f = form.valores
-  const [busca, setBusca] = useState('')
+  const [busca, setBusca] = useParametro('busca')
   const visiveis = (dados ?? []).filter(r => combina(busca, r.nome))
 
   function salvar() {
@@ -38,12 +41,13 @@ export function RacasPage() {
     )
   }
 
-  function excluir(r: Raca) {
+  async function excluir(r: Raca) {
     if (r.animais > 0) {
       linha.mostrarAviso(`A raça ${r.nome} não pode ser excluída: ${plural(r.animais, 'animal está cadastrado', 'animais estão cadastrados')} com ela.`)
       return
     }
-    if (!window.confirm(`Excluir a raça ${r.nome}?`)) return
+    if (!(await confirmar({ titulo: 'Excluir raça?', confirmar: 'Excluir', perigo: true,
+      mensagem: `A raça ${r.nome} será removida do cadastro.` }))) return
     linha.executar(() => enviar(`/racas/${r.id_raca}`, 'DELETE'),
       () => { estado.recarregar(); sucesso.mostrar(`Raça ${r.nome} excluída.`) })
   }
@@ -85,7 +89,9 @@ export function RacasPage() {
       <EstadoDados {...estado}>
         {dados && <Tabela legenda="Raças" colunas={colunas} linhas={visiveis}
           chave={r => String(r.id_raca)}
-          vazio={busca.trim() ? 'Nenhuma raça encontrada para essa busca.' : 'Nenhuma raça cadastrada.'} />}
+          vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')}
+            titulo="Nenhuma raça cadastrada ainda" texto="As raças aparecem no cadastro de animais e nas compras."
+            acao={!form.aberto && { rotulo: 'Cadastrar a primeira raça', permissao: 'racas.criar', onClick: form.abrirNovo }} />} />}
       </EstadoDados>
     </section>
     <AvisoSucesso {...sucesso} />

@@ -9,3 +9,9 @@
 
 .compra-registrada { border-color: var(--success-border); background: var(--success-bg); }
 .compra-registrada__brincos { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+
+/* Celular: com vários animais o formulário fica comprido; os botões ficam presos no rodapé da tela */
+@media screen and (max-width: 700px) {
+  .compra__acoes { position: sticky; bottom: 8px; z-index: 5; padding: 10px; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--color-surface); box-shadow: 0 -4px 18px rgb(var(--shadow-color) / .14); }
+  .compra__acoes > * { flex: 1; }
+}

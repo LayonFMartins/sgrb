@@ -1,0 +1,20 @@
+/* Janela de confirmação (ConfirmacaoProvider) */
+.confirmacao { width: min(440px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--color-surface); color: var(--color-text); box-shadow: 0 20px 48px rgb(var(--shadow-color) / .28); }
+.confirmacao::backdrop { background: rgb(var(--shadow-color) / .45); backdrop-filter: blur(2px); }
+.confirmacao[open] { animation: confirmacao-entrar .18s ease-out; }
+.confirmacao__caixa { display: grid; gap: 14px; padding: 24px; font-family: var(--font-functional); }
+.confirmacao__topo { display: flex; align-items: center; gap: 12px; }
+.confirmacao__topo h2 { margin: 0; font-size: 18px; }
+.confirmacao__icone { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--alert-error-bg); color: var(--status-error); }
+.confirmacao p { color: var(--color-text-secondary); font-size: 14px; line-height: 1.55; }
+.confirmacao__botoes { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.confirmacao__botoes button { min-height: 44px; padding: 10px 18px; }
+.confirmacao__cancelar { border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font-size: 14px; font-weight: 600; }
+.confirmacao__cancelar:hover { background: var(--color-background); }
+.confirmacao__confirmar { border: 0; border-radius: var(--radius-control); background: var(--color-button); color: var(--color-on-button); font-size: 14px; font-weight: 600; }
+.confirmacao__confirmar:hover { background: var(--color-button-hover); }
+.confirmacao__confirmar--perigo { background: var(--color-danger); }
+.confirmacao__confirmar--perigo:hover { background: var(--color-danger-hover); }
+@keyframes confirmacao-entrar { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .confirmacao[open] { animation: none; } }
+@media (max-width: 480px) { .confirmacao__botoes button { flex: 1; } }

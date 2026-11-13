@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
@@ -13,6 +12,9 @@ import type { PiqueteCadastro } from '../../types/cadastros'
 import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
 import { formatarData, formatarNumero, plural } from '../../utils/formatar'
+import { useParametro } from '../../hooks/useParametro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { Vazio } from '../../components/ui/Vazio'
 
 const VAZIO = { nome: '', area_ha: '', capacidade_max: '', descanso_min_dias: '' }
 
@@ -27,8 +29,9 @@ export function PiquetesPage() {
   const { pode } = usePermissions()
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
+  const confirmar = useConfirmacao()
   const f = form.valores
-  const [busca, setBusca] = useState('')
+  const [busca, setBusca] = useParametro('busca')
   const visiveis = (dados ?? []).filter(p => combina(busca, p.nome, p.situacao))
 
   function salvar() {
@@ -47,8 +50,9 @@ export function PiquetesPage() {
     })
   }
 
-  function excluir(p: PiqueteCadastro) {
-    if (!window.confirm(`Excluir o piquete ${p.nome}?`)) return
+  async function excluir(p: PiqueteCadastro) {
+    if (!(await confirmar({ titulo: 'Excluir piquete?', confirmar: 'Excluir', perigo: true,
+      mensagem: `O piquete ${p.nome} será removido. Piquetes que já tiveram animais não podem ser excluídos.` }))) return
     linha.executar(() => enviar(`/piquetes/${p.id_piquete}`, 'DELETE'), estado.recarregar)
   }
 
@@ -99,7 +103,9 @@ export function PiquetesPage() {
       <EstadoDados {...estado}>
         {dados && <Tabela legenda="Piquetes" colunas={colunas} linhas={visiveis}
           chave={p => String(p.id_piquete)}
-          vazio={busca.trim() ? 'Nenhum piquete encontrado para essa busca.' : 'Nenhum piquete cadastrado.'} />}
+          vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')}
+            titulo="Nenhum piquete cadastrado ainda" texto="Piquetes são as áreas de pasto onde os animais ficam. Cadastre-os para registrar as movimentações."
+            acao={!form.aberto && { rotulo: 'Cadastrar o primeiro piquete', permissao: 'piquetes.criar', onClick: form.abrirNovo }} />} />}
       </EstadoDados>
     </section>
   </>
