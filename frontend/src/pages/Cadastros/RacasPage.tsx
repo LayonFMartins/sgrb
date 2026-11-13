@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
+import { CampoBusca } from '../../components/cadastro/CampoBusca'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro } from '../../components/cadastro/FormularioCadastro'
 import { AvisoSucesso } from '../../components/ui/AvisoSucesso'
 import { EstadoDados } from '../../components/ui/EstadoDados'
@@ -10,6 +12,7 @@ import { useAvisoSucesso } from '../../hooks/useAvisoSucesso'
 import { useDados } from '../../hooks/useDados'
 import { useAcaoLinha, useFormulario } from '../../hooks/useFormulario'
 import type { Raca } from '../../types/animais'
+import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
 import { plural } from '../../utils/formatar'
 
@@ -22,6 +25,8 @@ export function RacasPage() {
   const linha = useAcaoLinha()
   const sucesso = useAvisoSucesso()
   const f = form.valores
+  const [busca, setBusca] = useState('')
+  const visiveis = (dados ?? []).filter(r => combina(busca, r.nome))
 
   function salvar() {
     const nome = f.nome.trim()
@@ -73,10 +78,14 @@ export function RacasPage() {
     </FormularioCadastro>}
 
     <section className="content-card" aria-label="Lista de raças">
+      <div className="cadastro-filtros-linha">
+        <CampoBusca valor={busca} onChange={setBusca} placeholder="Nome da raça" />
+      </div>
       <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
       <EstadoDados {...estado}>
-        {dados && <Tabela legenda="Raças" colunas={colunas} linhas={dados}
-          chave={r => String(r.id_raca)} vazio="Nenhuma raça cadastrada." />}
+        {dados && <Tabela legenda="Raças" colunas={colunas} linhas={visiveis}
+          chave={r => String(r.id_raca)}
+          vazio={busca.trim() ? 'Nenhuma raça encontrada para essa busca.' : 'Nenhuma raça cadastrada.'} />}
       </EstadoDados>
     </section>
     <AvisoSucesso {...sucesso} />
