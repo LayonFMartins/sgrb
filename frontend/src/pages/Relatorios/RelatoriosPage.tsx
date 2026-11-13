@@ -18,11 +18,17 @@ const ABAS = [
   { id: 'gmd', rotulo: 'Ganho de peso (GMD)' },
   { id: 'carencia', rotulo: 'Carência' },
   { id: 'reforcos', rotulo: 'Reforços' },
-  { id: 'campanhas', rotulo: 'Vacinação obrigatória' },
+  { id: 'campanhas', rotulo: 'Vacinação', completo: 'Vacinação obrigatória' },
   { id: 'rastreio', rotulo: 'Rastreio por lote' },
-  { id: 'vendas', rotulo: 'Resultado das vendas' },
+  { id: 'vendas', rotulo: 'Vendas', completo: 'Resultado das vendas' },
 ] as const
 type Aba = typeof ABAS[number]['id']
+
+// Nome usado no papel; na aba, alguns nomes são encurtados para caberem na tela.
+function nomeCompleto(aba: Aba) {
+  const item = ABAS.find(a => a.id === aba)
+  return item && 'completo' in item ? item.completo : item?.rotulo
+}
 
 export function RelatoriosPage() {
   const [params, setParams] = useSearchParams()
@@ -43,7 +49,7 @@ export function RelatoriosPage() {
     <section id="painel-consulta" role="tabpanel" aria-labelledby={`aba-${aba}`}
       className={`content-card consulta${aba === 'vendas' || aba === 'rastreio' ? ' impressao-paisagem' : ''}`}>
       {/* Dentro do painel para sair na mesma página (os relatórios largos são impressos em paisagem) */}
-      <CabecalhoImpressao titulo={`Relatório: ${ABAS.find(a => a.id === aba)?.rotulo}`} />
+      <CabecalhoImpressao titulo={`Relatório: ${nomeCompleto(aba)}`} />
       {aba === 'lotacao' && <Lotacao />}
       {aba === 'gmd' && <Gmd />}
       {aba === 'carencia' && <CarenciaAba />}
@@ -375,27 +381,74 @@ function ResumoRastreio({ lote, linhas }: { lote: string; linhas: Rastreio[] }) 
 
 /* ---------- Resultado das vendas ---------- */
 
-const real = (valor: number | null) => valor === null ? '—' : `R$ ${formatarNumero(valor, 2)}`
+const real = (valor: number | null) => valor === null ? '—'
+  : `${valor < 0 ? '−' : ''}R$\u00a0${formatarNumero(Math.abs(valor), 2)}`  // \u00a0: R$ e o número nunca se separam
+
+// Peso sem quebrar linha entre o número e o "kg".
+const kg = (valor: number) => formatarPeso(valor).replace(' kg', '\u00a0kg')
+
+// Tempo na fazenda: em dias até um ano; depois, em anos e meses (2093 dias -> "5 anos e 8 meses").
+function tempo(dias: number) {
+  if (dias < 365) return plural(dias, 'dia', 'dias')
+  const meses = Math.floor(dias / 30.4375)
+  const anos = Math.floor(meses / 12)
+  const resto = meses % 12
+  return plural(anos, 'ano', 'anos') + (resto ? ` e ${plural(resto, 'mês', 'meses')}` : '')
+}
+
+// Origem de quem não foi comprado (vem de vw_animal: 'Nascimento' ou 'Rebanho inicial').
+const semCompra = (v: ResultadoVenda) => v.origem === 'Nascimento' ? 'Nascido na fazenda' : v.origem
+
+// Margem sobre o custo de compra (ex.: comprou por 4.120, margem 2.340 = +56,8%).
+// Animais nascidos na fazenda não têm custo de compra, então não há percentual.
+const margemPct = (v: ResultadoVenda) =>
+  v.valor_compra ? (v.margem_bruta / v.valor_compra) * 100 : null
+
+// Duas linhas na mesma célula: o dado principal e um complemento menor embaixo.
+// Assim a tabela cabe na tela sem rolagem lateral.
+const Celula = ({ principal, detalhe, className = '' }: { principal: ReactNode; detalhe?: ReactNode; className?: string }) =>
+  <span className={`celula-dupla ${className}`}><span>{principal}</span>{detalhe && <small>{detalhe}</small>}</span>
 
 const colunasVendas: Coluna<ResultadoVenda>[] = [
-  { titulo: 'Brinco', valor: v => <LinkAnimal brinco={v.brinco} />, csv: v => v.brinco },
+  { titulo: 'Animal', valor: v => <Celula className="celula-dupla--animal" principal={<LinkAnimal brinco={v.brinco} />}
+    detalhe={`${v.raca} · ${v.fornecedor ?? semCompra(v).toLocaleLowerCase('pt-BR')}`} /> },
+  { titulo: 'Venda', valor: v => <Celula className="celula-dupla--venda" principal={formatarData(v.data_venda)} detalhe={v.comprador} /> },
+  { titulo: 'Na fazenda', alinhar: 'direita', valor: v => <Celula principal={tempo(v.dias_na_fazenda)}
+    detalhe={v.ganho_kg === null ? 'sem pesagem de entrada' : `ganhou ${kg(v.ganho_kg)}`} /> },
+  { titulo: 'Custo', alinhar: 'direita', valor: v => v.valor_compra === null
+    ? <span className="texto-secundario">{semCompra(v)}</span>
+    : real(v.valor_compra) },
+  { titulo: 'Receita', alinhar: 'direita', valor: v => <Celula principal={real(v.valor_venda)}
+    detalhe={<>{kg(v.peso_saida)}<br />{real(v.valor_por_kg)}/kg</>} /> },
+  { titulo: 'Margem bruta', alinhar: 'direita', valor: v => {
+    const pct = margemPct(v)
+    return <Celula principal={<strong className={v.margem_bruta < 0 ? 'valor-negativo' : 'valor-positivo'}>{real(v.margem_bruta)}</strong>}
+      detalhe={pct === null ? 'sem custo de compra' : `${pct >= 0 ? '+' : ''}${formatarNumero(pct, 1)}% sobre a compra`} />
+  } },
+]
+
+// O CSV continua com uma coluna por informação, que é o melhor formato para o Excel.
+const colunasVendasCsv: Coluna<ResultadoVenda>[] = [
+  { titulo: 'Brinco', valor: v => v.brinco },
   { titulo: 'Raça', valor: v => v.raca },
-  { titulo: 'Origem', valor: v => v.fornecedor ?? 'Nascido na fazenda' },
-  { titulo: 'Venda', valor: v => <span className="sem-quebra">{formatarData(v.data_venda)}</span>, csv: v => v.data_venda },
+  { titulo: 'Origem', valor: v => v.fornecedor ?? semCompra(v) },
+  { titulo: 'Data da venda', valor: v => v.data_venda },
   { titulo: 'Comprador', valor: v => v.comprador },
-  { titulo: 'Na fazenda', valor: v => plural(v.dias_na_fazenda, 'dia', 'dias'), alinhar: 'direita', csv: v => v.dias_na_fazenda },
-  { titulo: 'Ganho de peso', valor: v => v.ganho_kg === null ? '—' : `+${formatarPeso(v.ganho_kg)}`, alinhar: 'direita', csv: v => v.ganho_kg },
-  { titulo: 'Custo de compra', valor: v => v.valor_compra === null ? 'Nascido aqui' : real(v.valor_compra), alinhar: 'direita', csv: v => v.valor_compra },
-  { titulo: 'Valor de venda', valor: v => real(v.valor_venda), alinhar: 'direita', csv: v => v.valor_venda },
-  { titulo: 'Margem bruta', valor: v => <strong className={v.margem_bruta < 0 ? 'valor-negativo' : undefined}>{real(v.margem_bruta)}</strong>,
-    alinhar: 'direita', csv: v => v.margem_bruta },
-  { titulo: 'R$/kg', valor: v => formatarNumero(v.valor_por_kg, 2), alinhar: 'direita', csv: v => v.valor_por_kg },
+  { titulo: 'Dias na fazenda', valor: v => v.dias_na_fazenda },
+  { titulo: 'Peso de entrada (kg)', valor: v => v.peso_entrada ?? '' },
+  { titulo: 'Peso de saída (kg)', valor: v => v.peso_saida },
+  { titulo: 'Ganho de peso (kg)', valor: v => v.ganho_kg ?? '' },
+  { titulo: 'Custo de compra (R$)', valor: v => v.valor_compra ?? '' },
+  { titulo: 'Valor de venda (R$)', valor: v => v.valor_venda },
+  { titulo: 'Margem bruta (R$)', valor: v => v.margem_bruta },
+  { titulo: 'Margem sobre a compra (%)', valor: v => { const p = margemPct(v); return p === null ? '' : Math.round(p * 10) / 10 } },
+  { titulo: 'R$/kg', valor: v => v.valor_por_kg },
 ]
 
 function Vendas() {
   const { dados, ...estado } = useDados<ResultadoVenda[]>('/consultas/vendas')
   return <>
-    <Descricao titulo="Resultado das vendas" onExportar={dados?.length ? () => exportarTabela('resultado-vendas', colunasVendas, dados) : undefined}>
+    <Descricao titulo="Resultado das vendas" onExportar={dados?.length ? () => exportarTabela('resultado-vendas', colunasVendasCsv, dados) : undefined}>
       Para cada animal vendido: quanto custou, por quanto foi vendido, quanto tempo ficou na fazenda e quanto peso ganhou.
       A margem bruta não inclui custos de manutenção (pasto, sal, medicamentos, mão de obra).
     </Descricao>
@@ -413,15 +466,22 @@ function Vendas() {
 function TotaisVendas({ vendas }: { vendas: ResultadoVenda[] }) {
   const soma = (f: (v: ResultadoVenda) => number | null) => vendas.reduce((t, v) => t + (f(v) ?? 0), 0)
   const receita = soma(v => v.valor_venda)
-  const pesoVendido = soma(v => v.peso_saida)
-  const itens = [
-    { rotulo: 'Animais vendidos', valor: String(vendas.length) },
-    { rotulo: 'Receita', valor: real(receita) },
-    { rotulo: 'Margem bruta total', valor: real(soma(v => v.margem_bruta)) },
-    { rotulo: 'Tempo médio na fazenda', valor: plural(Math.round(soma(v => v.dias_na_fazenda) / vendas.length), 'dia', 'dias') },
-    { rotulo: 'Preço médio', valor: `R$ ${formatarNumero(receita / pesoVendido, 2)}/kg` },
+  const margem = soma(v => v.margem_bruta)
+  const comprados = vendas.filter(v => v.valor_compra !== null)
+  const custoComprados = comprados.reduce((t, v) => t + (v.valor_compra ?? 0), 0)
+  const margemComprados = comprados.reduce((t, v) => t + v.margem_bruta, 0)
+  const itens: { rotulo: string; valor: string; detalhe: string; destaque?: boolean }[] = [
+    { rotulo: 'Receita', valor: real(receita), detalhe: plural(vendas.length, 'animal vendido', 'animais vendidos') },
+    { rotulo: 'Margem bruta', valor: real(margem), destaque: true,
+      detalhe: custoComprados > 0 ? `+${formatarNumero((margemComprados / custoComprados) * 100, 1)}% sobre o custo de compra` : 'sem custo de compra' },
+    { rotulo: 'Tempo médio na fazenda', valor: tempo(Math.round(soma(v => v.dias_na_fazenda) / vendas.length)),
+      detalhe: `média de ${real(margem / vendas.length)} por animal` },
+    { rotulo: 'Preço médio', valor: `R$ ${formatarNumero(receita / soma(v => v.peso_saida), 2)}/kg`,
+      detalhe: `${formatarNumero(soma(v => v.peso_saida), 1)} kg vendidos` },
   ]
   return <dl className="consulta-totais">
-    {itens.map(i => <div key={i.rotulo}><dt>{i.rotulo}</dt><dd>{i.valor}</dd></div>)}
+    {itens.map(i => <div key={i.rotulo} className={i.destaque ? 'consulta-totais__destaque' : undefined}>
+      <dt>{i.rotulo}</dt><dd>{i.valor}</dd><p>{i.detalhe}</p>
+    </div>)}
   </dl>
 }
