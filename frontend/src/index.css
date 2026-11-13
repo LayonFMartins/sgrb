@@ -23,6 +23,27 @@
   --color-button-hover: #503824;
   --border-default: #cbd6ca;
   --status-error: #a63c32;
+  /* Cores de apoio (antes fixas nos componentes); o modo escuro redefine todas */
+  --color-on-button: #ffffff;
+  --button-active: #402d1e;
+  --icon-muted: #718072;
+  --row-hover: #fcfbf7;
+  --divider: #e7ece5;
+  --track: #eef1ea;
+  --tag-ok-bg: #e1e8dc;
+  --tag-ok-text: var(--color-primary);
+  --tag-alert-bg: #f6e7d6;
+  --tag-alert-text: #7a4a22;
+  --tag-error-bg: #f6dedb;
+  --tag-error-text: var(--status-error);
+  --alert-warn-bg: #fbf3ea;
+  --alert-warn-border: #e8cfb2;
+  --alert-warn-text: #6b4120;
+  --alert-error-bg: #fbf1ef;
+  --alert-error-border: #e6b8b2;
+  --success-bg: #eef4ea;
+  --success-border: #b9cdb5;
+  --shadow-color: 48 58 50;
   --radius-control: 8px;
   --radius-card: 12px;
 
@@ -43,3 +64,48 @@ button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 h1, p { margin: 0; }
 :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
+
+/* Modo escuro: escolhido em Configurações (claro, escuro ou automático).
+   O atributo data-theme no <html> é definido antes do React carregar (index.html),
+   então a página não pisca em branco. Só vale na tela: a impressão sai sempre clara. */
+@media screen {
+  :root[data-theme="dark"] {
+    --color-primary: #8cc5a3;
+    --color-secondary: #9db27d;
+    --color-accent: #d29a6c;
+    --color-background: #141a16;
+    --color-surface: #1c2420;
+    --color-text: #e4e9e2;
+    --color-muted: #9aa79c;
+    --color-text-secondary: #b9c4ba;
+    --sidebar-background: #182019;
+    --sidebar-icon: #a9bd8a;
+    --sidebar-caption: #e4e9e2;
+    --sidebar-active: #273a2f;
+    --sidebar-hover: #212c25;
+    --sidebar-disabled: #8f9c91;
+    --color-button: #8a6446;
+    --color-button-hover: #7a573c;
+    --border-default: #354239;
+    --status-error: #f2948a;
+    --color-on-button: #ffffff;
+    --button-active: #6e4e35;
+    --icon-muted: #8f9c91;
+    --row-hover: #212b25;
+    --divider: #2c3730;
+    --track: #2a342e;
+    --tag-ok-bg: #233a2c;
+    --tag-alert-bg: #3f2e1b;
+    --tag-alert-text: #f2c592;
+    --tag-error-bg: #47241f;
+    --alert-warn-bg: #2a2119;
+    --alert-warn-border: #5e4229;
+    --alert-warn-text: #f2c592;
+    --alert-error-bg: #2d1d1b;
+    --alert-error-border: #6c3631;
+    --success-bg: #1e2d23;
+    --success-border: #3e5e48;
+    --shadow-color: 0 0 0;
+    color-scheme: dark;
+  }
+}

@@ -7,5 +7,5 @@
 .compra-animal__remover { justify-self: start; }
 .compra-animais__adicionar { width: fit-content; }
 
-.compra-registrada { border-color: #b9cdb3; background: #f3f7f1; }
+.compra-registrada { border-color: var(--success-border); background: var(--success-bg); }
 .compra-registrada__brincos { display: flex; flex-wrap: wrap; gap: 8px 14px; }

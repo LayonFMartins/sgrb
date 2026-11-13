@@ -1,0 +1,51 @@
+/* Tela de Configurações (.consulta-totais vem de Relatorios.css) */
+.configuracoes { display: grid; gap: 24px; }
+.config-secao { gap: 20px; }
+.config-secao__topo { display: grid; gap: 6px; }
+.config-secao__topo h2 { font-size: 18px; }
+.config-secao__topo p { color: var(--color-text-secondary); font-size: 14px; }
+.config-secao__topo--acoes { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 24px; }
+.config-secao__topo--acoes > div { display: grid; gap: 6px; }
+
+/* Aparência: três cartões clicáveis com uma miniatura do tema */
+.tema-opcoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 0; padding: 0; border: 0; }
+.tema-opcao { position: relative; display: grid; gap: 6px; padding: 12px; border: 1px solid var(--border-default); border-radius: var(--radius-card); background: var(--color-surface); cursor: pointer; }
+.tema-opcao:hover { border-color: var(--color-secondary); }
+.tema-opcao--ativa { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
+.tema-opcao input { position: absolute; opacity: 0; pointer-events: none; }
+.tema-opcao:has(input:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+.tema-opcao__titulo { display: flex; align-items: center; gap: 8px; font-family: var(--font-functional); font-size: 15px; font-weight: 600; }
+.tema-opcao__texto { color: var(--color-text-secondary); font-size: 13px; line-height: 1.45; }
+
+/* Miniatura: barra lateral + duas faixas de conteúdo */
+.tema-opcao__previa { display: grid; grid-template-columns: 26% 1fr; grid-template-rows: 1fr 1fr; gap: 6px; height: 74px; margin-bottom: 4px; padding: 8px; border-radius: 8px; }
+.tema-opcao__previa span { border-radius: 4px; }
+.tema-opcao__previa span:first-child { grid-row: 1 / 3; }
+.tema-opcao__previa--claro { background: #faf7f0; border: 1px solid #e7ece5; }
+.tema-opcao__previa--claro span { background: #ffffff; border: 1px solid #e1e8dc; }
+.tema-opcao__previa--claro span:nth-child(2) { background: #1f4d3a; border: 0; height: 8px; align-self: end; width: 55%; }
+.tema-opcao__previa--escuro { background: #141a16; border: 1px solid #2c3730; }
+.tema-opcao__previa--escuro span { background: #1c2420; border: 1px solid #2c3730; }
+.tema-opcao__previa--escuro span:nth-child(2) { background: #8cc5a3; border: 0; height: 8px; align-self: end; width: 55%; }
+.tema-opcao__previa--automatico { background: linear-gradient(135deg, #faf7f0 50%, #141a16 50%); border: 1px solid var(--border-default); }
+.tema-opcao__previa--automatico span { background: linear-gradient(135deg, #ffffff 50%, #1c2420 50%); border: 1px solid var(--border-default); }
+.tema-opcao__previa--automatico span:nth-child(2) { background: linear-gradient(90deg, #1f4d3a 50%, #8cc5a3 50%); border: 0; height: 8px; align-self: end; width: 55%; }
+
+/* Minha conta */
+.config-dados { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px 24px; margin: 0; }
+.config-dados dt { color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.config-dados dd { margin: 4px 0 0; font-size: 15px; overflow-wrap: anywhere; }
+.config-senha { display: grid; gap: 14px; padding-top: 20px; border-top: 1px solid var(--divider); }
+.config-senha h3 { font-size: 16px; }
+.config-senha__campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px 20px; }
+
+/* Sistema e banco */
+.config-testar { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; }
+.config-conexao { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid var(--success-border); border-radius: var(--radius-control); background: var(--success-bg); font-size: 14px; }
+.config-conexao svg { flex-shrink: 0; margin-top: 1px; color: var(--color-primary); }
+.config-listas { display: grid; gap: 10px; }
+.config-listas details { border: 1px solid var(--border-default); border-radius: var(--radius-control); }
+.config-listas summary { padding: 12px 14px; font-family: var(--font-functional); font-size: 14px; font-weight: 600; cursor: pointer; }
+.config-listas details[open] summary { border-bottom: 1px solid var(--border-default); }
+.config-listas .tabela-rolagem { border: 0; border-radius: 0 0 var(--radius-control) var(--radius-control); }
+.configuracoes code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; }

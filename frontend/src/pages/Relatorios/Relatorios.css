@@ -10,7 +10,7 @@
 
 .seletor { display: inline-flex; width: fit-content; padding: 3px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-background); font-family: var(--font-functional); }
 .seletor__botao { padding: 7px 14px; border: 0; border-radius: 6px; background: transparent; color: var(--color-text-secondary); font-size: 13px; font-weight: 600; }
-.seletor__botao--ativo { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 2px rgba(48, 58, 50, .12); }
+.seletor__botao--ativo { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 2px rgb(var(--shadow-color) / .12); }
 
 /* Topo de cada relatório: título e explicação à esquerda, imprimir/exportar à direita */
 .consulta__topo { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 24px; }
