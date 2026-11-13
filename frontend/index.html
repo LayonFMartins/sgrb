@@ -7,6 +7,15 @@
     <meta name="theme-color" content="#faf7f0" />
     <meta name="description" content="Acesse o SGRB — Sistema de Gestão e Rastreabilidade de Rebanho Bovino." />
     <title>Entrar | SGRB</title>
+    <script>
+      // Aplica o tema salvo (Configurações > Aparência) antes de a página aparecer.
+      try {
+        var t = localStorage.getItem('sgrb-tema')
+        var escuro = t === 'escuro' || (t === 'automatico' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = escuro ? 'dark' : 'light'
+        if (escuro) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#141a16')
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

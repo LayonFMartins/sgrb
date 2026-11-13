@@ -11,6 +11,7 @@ import { UsuariosPage } from './pages/Cadastros/UsuariosPage'
 import { RacasPage } from './pages/Cadastros/RacasPage'
 import { ComprasPage } from './pages/Compras/ComprasPage'
 import { GtaPage } from './pages/Gta/GtaPage'
+import { ConfiguracoesPage } from './pages/Configuracoes/ConfiguracoesPage'
 
 interface NavigationItemBase {
   path: string
@@ -51,7 +52,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/relatorios', label: 'Relatórios e consultas', icon: ChartBar, permissao: 'consultas.visualizar', pagina: RelatoriosPage },
   ] },
   { id: 'sistema', label: 'Sistema', items: [
-    { path: '/configuracoes', label: 'Configurações', icon: Settings, futuro: true },
+    { path: '/configuracoes', label: 'Configurações', icon: Settings, permissao: 'configuracoes.visualizar', pagina: ConfiguracoesPage },
   ] },
 ]
 

@@ -1,7 +1,7 @@
 .aviso-sucesso-area { position: fixed; right: 24px; bottom: 24px; z-index: 50; }
-.aviso-sucesso { display: flex; align-items: center; gap: 10px; max-width: min(420px, calc(100vw - 32px)); padding: 12px 12px 12px 16px; border: 1px solid #b9cdb5; border-radius: var(--radius-control); background: #eef4ea; color: var(--color-primary); font-family: var(--font-functional); font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgba(48, 58, 50, .16); animation: aviso-entrar .2s ease-out; }
+.aviso-sucesso { display: flex; align-items: center; gap: 10px; max-width: min(420px, calc(100vw - 32px)); padding: 12px 12px 12px 16px; border: 1px solid var(--success-border); border-radius: var(--radius-control); background: var(--success-bg); color: var(--color-primary); font-family: var(--font-functional); font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgb(var(--shadow-color) / .16); animation: aviso-entrar .2s ease-out; }
 .aviso-sucesso button { display: grid; place-items: center; margin-left: 4px; padding: 4px; border: 0; border-radius: 6px; background: transparent; color: inherit; }
-.aviso-sucesso button:hover { background: rgba(31, 77, 58, .08); }
+.aviso-sucesso button:hover { background: var(--row-hover); }
 @keyframes aviso-entrar { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .aviso-sucesso { animation: none; } }
 @media (max-width: 640px) { .aviso-sucesso-area { right: 16px; bottom: 16px; left: 16px; } }

@@ -3,7 +3,7 @@
 .lotacao__item:first-child { border-top: 0; }
 .lotacao__nome { display: grid; gap: 2px; font-size: 14px; }
 .lotacao__nome span { font-size: 12px; color: var(--color-text-secondary); }
-.lotacao__barra { height: 10px; border-radius: 5px; background: #eef1ea; overflow: hidden; }
+.lotacao__barra { height: 10px; border-radius: 5px; background: var(--track); overflow: hidden; }
 .lotacao__preenchido { display: block; height: 100%; border-radius: 5px; }
 .lotacao__preenchido--normal { background: var(--color-secondary); }
 .lotacao__preenchido--alto { background: var(--color-accent); }

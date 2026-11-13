@@ -6,7 +6,7 @@
 .painel-rebanho strong, .painel-indicador strong { font-family: var(--font-heading); font-size: 34px; line-height: 1.1; color: var(--color-primary); }
 .painel-rebanho p, .painel-indicador p { font-size: 13px; line-height: 1.5; color: var(--color-text-secondary); }
 .painel-indicador h2 svg { color: var(--sidebar-icon); }
-.painel-indicador--atencao { border-color: #e2c3a4; background: #fffaf3; }
+.painel-indicador--atencao { border-color: var(--alert-warn-border); background: var(--alert-warn-bg); }
 .painel-indicador--atencao strong { color: var(--color-accent); }
 a.painel-indicador:hover { border-color: var(--color-primary); }
 
