@@ -1,7 +1,9 @@
+import { useSearchParams } from 'react-router-dom'
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
 import { CampoBusca } from '../../components/cadastro/CampoBusca'
+import { LinkFicha } from '../../components/cadastro/LinkFicha'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro, Selecao } from '../../components/cadastro/FormularioCadastro'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Input } from '../../components/ui/Input'
@@ -16,6 +18,7 @@ import { mascararTelefone, telefoneCompleto } from '../../utils/telefone'
 import { useParametro } from '../../hooks/useParametro'
 import { useConfirmacao } from '../../hooks/useConfirmacao'
 import { Vazio } from '../../components/ui/Vazio'
+import { FichaFornecedor } from './FichaFornecedor'
 
 const VAZIO = { nome_produtor: '', nome_propriedade: '', municipio: '', uf: '', telefones: [''] }
 
@@ -23,7 +26,14 @@ const VAZIO = { nome_produtor: '', nome_propriedade: '', municipio: '', uf: '', 
 const UFS = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB',
   'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO']
 
+// A ficha abre na mesma rota: /fornecedores?ficha=1 (igual à ficha do animal).
 export function FornecedoresPage() {
+  const [params] = useSearchParams()
+  const ficha = params.get('ficha')
+  return ficha ? <FichaFornecedor key={ficha} id={ficha} /> : <ListaFornecedores />
+}
+
+function ListaFornecedores() {
   const { dados, ...estado } = useDados<Fornecedor[]>('/fornecedores')
   const { pode } = usePermissions()
   const form = useFormulario(VAZIO)
@@ -66,7 +76,8 @@ export function FornecedoresPage() {
   }
 
   const colunas: Coluna<Fornecedor>[] = [
-    { titulo: 'Produtor', valor: x => <strong>{x.nome_produtor}</strong> },
+    { titulo: 'Produtor', valor: x => <LinkFicha para={`/fornecedores?ficha=${x.id_fornecedor}`}
+      titulo={`Ver as compras feitas com ${x.nome_produtor}`}>{x.nome_produtor}</LinkFicha>, csv: x => x.nome_produtor },
     { titulo: 'Propriedade', valor: x => x.nome_propriedade },
     { titulo: 'Município', valor: x => `${x.municipio}/${x.uf}` },
     { titulo: 'Telefones', valor: x => x.telefones.join(' · ') || '—' },
