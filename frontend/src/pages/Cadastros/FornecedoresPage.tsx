@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
-import { AvisoErro, CabecalhoCadastro, FormularioCadastro } from '../../components/cadastro/FormularioCadastro'
+import { CampoBusca } from '../../components/cadastro/CampoBusca'
+import { AvisoErro, CabecalhoCadastro, FormularioCadastro, Selecao } from '../../components/cadastro/FormularioCadastro'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Input } from '../../components/ui/Input'
 import { Tabela, type Coluna } from '../../components/ui/Tabela'
@@ -9,9 +11,15 @@ import { useDados } from '../../hooks/useDados'
 import { useAcaoLinha, useFormulario } from '../../hooks/useFormulario'
 import type { Fornecedor } from '../../types/cadastros'
 import { enviar } from '../../utils/enviar'
+import { combina } from '../../utils/busca'
 import { plural } from '../../utils/formatar'
+import { mascararTelefone, telefoneCompleto } from '../../utils/telefone'
 
 const VAZIO = { nome_produtor: '', nome_propriedade: '', municipio: '', uf: '', telefones: [''] }
+
+// As mesmas siglas aceitas pelo banco (CHECK ck_fornecedor_uf).
+const UFS = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB',
+  'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO']
 
 export function FornecedoresPage() {
   const { dados, ...estado } = useDados<Fornecedor[]>('/fornecedores')
@@ -19,13 +27,20 @@ export function FornecedoresPage() {
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
   const f = form.valores
+  const [busca, setBusca] = useState('')
+  const visiveis = (dados ?? []).filter(x => combina(busca, x.nome_produtor, x.nome_propriedade,
+    x.municipio, x.uf, ...x.telefones, ...x.telefones.map(t => t.replace(/\D/g, ''))))
 
   function salvar() {
     const corpo = { ...f, telefones: f.telefones.filter(t => t.trim()) }
+    const incompleto = corpo.telefones.find(t => !telefoneCompleto(t))
     form.executar(
-      () => form.editando
-        ? enviar(`/fornecedores/${form.editandoId}`, 'PUT', corpo)
-        : enviar('/fornecedores', 'POST', corpo),
+      async () => {
+        if (incompleto) throw new Error(`O telefone ${incompleto} está incompleto: informe o DDD e o número (10 ou 11 dígitos).`)
+        return form.editando
+          ? enviar(`/fornecedores/${form.editandoId}`, 'PUT', corpo)
+          : enviar('/fornecedores', 'POST', corpo)
+      },
       estado.recarregar,
     )
   }
@@ -33,7 +48,7 @@ export function FornecedoresPage() {
   function editar(x: Fornecedor) {
     form.abrirEdicao(x.id_fornecedor, {
       nome_produtor: x.nome_produtor, nome_propriedade: x.nome_propriedade,
-      municipio: x.municipio, uf: x.uf, telefones: x.telefones.length ? x.telefones : [''],
+      municipio: x.municipio, uf: x.uf, telefones: x.telefones.length ? x.telefones.map(mascararTelefone) : [''],
     })
   }
 
@@ -43,7 +58,7 @@ export function FornecedoresPage() {
   }
 
   function alterarTelefone(i: number, valor: string) {
-    form.alterar('telefones', f.telefones.map((t, j) => j === i ? valor : t))
+    form.alterar('telefones', f.telefones.map((t, j) => j === i ? mascararTelefone(valor) : t))
   }
 
   const colunas: Coluna<Fornecedor>[] = [
@@ -78,11 +93,13 @@ export function FornecedoresPage() {
         onChange={e => form.alterar('nome_propriedade', e.target.value)} />
       <Input label="Município" value={f.municipio} maxLength={60} required
         onChange={e => form.alterar('municipio', e.target.value)} />
-      <Input label="UF" value={f.uf} maxLength={2} required placeholder="MG"
-        onChange={e => form.alterar('uf', e.target.value.toUpperCase())} />
+      <Selecao label="UF" value={f.uf} required onChange={e => form.alterar('uf', e.target.value)}>
+        <option value="">Selecione…</option>
+        {UFS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+      </Selecao>
       <div className="cadastro-telefones cadastro-form__campo-largo">
         {f.telefones.map((t, i) => <div key={i} className="cadastro-telefones__linha">
-          <Input label={`Telefone ${i + 1}`} value={t} maxLength={20} type="tel" placeholder="(31) 99999-0000"
+          <Input label={`Telefone ${i + 1}`} value={t} maxLength={15} type="tel" inputMode="numeric" placeholder="(31) 99999-0000"
             onChange={e => alterarTelefone(i, e.target.value)} />
           {f.telefones.length > 1 && <button type="button" className="acao-icone" aria-label={`Remover telefone ${i + 1}`}
             onClick={() => form.alterar('telefones', f.telefones.filter((_, j) => j !== i))}><X size={16} aria-hidden="true" /></button>}
@@ -93,10 +110,14 @@ export function FornecedoresPage() {
     </FormularioCadastro>}
 
     <section className="content-card" aria-label="Lista de fornecedores">
+      <div className="cadastro-filtros-linha">
+        <CampoBusca valor={busca} onChange={setBusca} placeholder="Produtor, cidade ou telefone" />
+      </div>
       <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
       <EstadoDados {...estado}>
-        {dados && <Tabela legenda="Fornecedores" colunas={colunas} linhas={dados}
-          chave={x => String(x.id_fornecedor)} vazio="Nenhum fornecedor cadastrado." />}
+        {dados && <Tabela legenda="Fornecedores" colunas={colunas} linhas={visiveis}
+          chave={x => String(x.id_fornecedor)}
+          vazio={busca.trim() ? 'Nenhum fornecedor encontrado para essa busca.' : 'Nenhum fornecedor cadastrado.'} />}
       </EstadoDados>
     </section>
   </>

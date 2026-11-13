@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
+import { CampoBusca } from '../../components/cadastro/CampoBusca'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro } from '../../components/cadastro/FormularioCadastro'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Input } from '../../components/ui/Input'
@@ -8,6 +10,7 @@ import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
 import { useAcaoLinha, useFormulario } from '../../hooks/useFormulario'
 import type { PiqueteCadastro } from '../../types/cadastros'
+import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
 import { formatarData, formatarNumero, plural } from '../../utils/formatar'
 
@@ -25,6 +28,8 @@ export function PiquetesPage() {
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
   const f = form.valores
+  const [busca, setBusca] = useState('')
+  const visiveis = (dados ?? []).filter(p => combina(busca, p.nome, p.situacao))
 
   function salvar() {
     form.executar(
@@ -87,10 +92,14 @@ export function PiquetesPage() {
     </FormularioCadastro>}
 
     <section className="content-card" aria-label="Lista de piquetes">
+      <div className="cadastro-filtros-linha">
+        <CampoBusca valor={busca} onChange={setBusca} placeholder="Nome ou situação (ex.: Em descanso)" />
+      </div>
       <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
       <EstadoDados {...estado}>
-        {dados && <Tabela legenda="Piquetes" colunas={colunas} linhas={dados}
-          chave={p => String(p.id_piquete)} vazio="Nenhum piquete cadastrado." />}
+        {dados && <Tabela legenda="Piquetes" colunas={colunas} linhas={visiveis}
+          chave={p => String(p.id_piquete)}
+          vazio={busca.trim() ? 'Nenhum piquete encontrado para essa busca.' : 'Nenhum piquete cadastrado.'} />}
       </EstadoDados>
     </section>
   </>
