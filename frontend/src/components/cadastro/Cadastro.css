@@ -20,6 +20,7 @@
 .cadastro-form__dica { color: var(--color-text-secondary); font-size: 13px; }
 
 .cadastro-select { width: 100%; min-width: 0; padding: 14px 12px; border: 0; outline: none; background: transparent; color: var(--color-text); font-size: 14px; }
+.cadastro-select option { background: var(--color-surface); color: var(--color-text); }
 
 .cadastro-checkbox { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
 .cadastro-checkbox input { width: 18px; height: 18px; accent-color: var(--color-primary); }
