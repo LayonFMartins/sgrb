@@ -72,6 +72,39 @@ fornecedoresRouter.get('/:id', exigirPermissao('fornecedores.visualizar'), async
   res.json(rows[0]);
 });
 
+// GET /api/fornecedores/:id/compras  -> historico de compras feitas com o fornecedor.
+// Cada linha e uma compra (mesma data + mesma GTA de entrada), com quantos animais
+// vieram, o valor total, quantos ainda estao na fazenda e os brincos.
+// LATERAL: para cada animal, busca a GTA de ENTRADA dele (o animal pode ter tambem
+// uma GTA de saida, da venda, que nao deve entrar aqui).
+fornecedoresRouter.get('/:id/compras', exigirPermissao('fornecedores.visualizar'), async (req, res) => {
+  const id = idDaRota(req.params.id, NAO_ENCONTRADO);
+  const existe = await pool.query('SELECT 1 FROM fornecedor WHERE id_fornecedor = $1', [id]);
+  if (!existe.rowCount) throw new ErroHttp(404, NAO_ENCONTRADO);
+
+  const { rows } = await pool.query(
+    `SELECT a.data_compra, g.numero_gta, g.finalidade,
+            count(*)::int AS animais,
+            sum(a.valor_compra) AS valor_total,
+            count(*) FILTER (WHERE NOT EXISTS (
+              SELECT 1 FROM baixa b WHERE b.brinco = a.brinco))::int AS ainda_na_fazenda,
+            array_agg(a.brinco ORDER BY a.brinco) AS brincos
+       FROM animal a
+       LEFT JOIN LATERAL (
+            SELECT g.numero_gta, g.finalidade
+              FROM transita_com t
+              JOIN gta g ON g.numero_gta = t.numero_gta
+             WHERE t.brinco = a.brinco AND g.tipo = 'ENTRADA'
+             ORDER BY g.data_emissao
+             LIMIT 1) g ON true
+      WHERE a.id_fornecedor = $1
+      GROUP BY a.data_compra, g.numero_gta, g.finalidade
+      ORDER BY a.data_compra DESC, g.numero_gta`,
+    [id]
+  );
+  res.json(rows);
+});
+
 // POST /api/fornecedores
 // { "nome_produtor": "...", "nome_propriedade": "...", "municipio": "...", "uf": "MG",
 //   "telefones": ["(31) 99999-0000"] }
