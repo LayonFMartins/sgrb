@@ -39,7 +39,18 @@
 .consulta-totais > div { padding: 12px 14px; border-radius: var(--radius-control); background: var(--color-background); }
 .consulta-totais dt { color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
 .consulta-totais dd { margin: 4px 0 0; font-family: var(--font-functional); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.consulta-totais p { margin-top: 2px; color: var(--color-text-secondary); font-size: 13px; }
+.consulta-totais__destaque { box-shadow: inset 3px 0 0 var(--color-primary); }
 .valor-negativo { color: var(--status-error); }
+.valor-positivo { color: var(--color-primary); }
+
+/* Célula com dado principal e complemento menor embaixo */
+.celula-dupla { display: grid; gap: 2px; }
+.celula-dupla small { color: var(--color-text-secondary); font-size: 12.5px; line-height: 1.35; }
+.tabela--direita .celula-dupla { justify-items: end; }
+.tabela--direita .celula-dupla small { max-width: 150px; white-space: normal; text-align: right; }
+.celula-dupla--animal { min-width: 120px; }
+.celula-dupla--venda { min-width: 160px; }
 
 @media print {
   .consulta { border: 0; padding: 0; gap: 12px; }
