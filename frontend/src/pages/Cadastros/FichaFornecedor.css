@@ -1,0 +1,2 @@
+/* Brincos da compra: lado a lado, quebrando linha quando não cabem */
+.compra-brincos { display: inline-flex; flex-wrap: wrap; gap: 4px 10px; }

@@ -53,3 +53,26 @@ export interface UsuarioCadastro {
   ativo: boolean
   tem_login: boolean
 }
+
+// GET /api/piquetes/:id  -> piquete + animais que estão nele agora
+export interface AnimalNoPiquete {
+  brinco: string
+  data_entrada: string
+  sexo: 'M' | 'F'
+  categoria: string
+}
+
+export interface PiqueteDetalhe extends PiqueteCadastro {
+  animais_no_piquete: AnimalNoPiquete[]
+}
+
+// GET /api/fornecedores/:id/compras  -> uma linha por compra (data + GTA de entrada)
+export interface CompraFornecedor {
+  data_compra: string
+  numero_gta: string | null
+  finalidade: string | null
+  animais: number
+  valor_total: number
+  ainda_na_fazenda: number
+  brincos: string[]
+}

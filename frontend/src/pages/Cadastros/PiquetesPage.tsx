@@ -1,7 +1,9 @@
+import { useSearchParams } from 'react-router-dom'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
 import { CampoBusca } from '../../components/cadastro/CampoBusca'
+import { LinkFicha } from '../../components/cadastro/LinkFicha'
 import { AvisoErro, CabecalhoCadastro, FormularioCadastro } from '../../components/cadastro/FormularioCadastro'
 import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Input } from '../../components/ui/Input'
@@ -15,6 +17,7 @@ import { formatarData, formatarNumero, plural } from '../../utils/formatar'
 import { useParametro } from '../../hooks/useParametro'
 import { useConfirmacao } from '../../hooks/useConfirmacao'
 import { Vazio } from '../../components/ui/Vazio'
+import { FichaPiquete } from './FichaPiquete'
 
 const VAZIO = { nome: '', area_ha: '', capacidade_max: '', descanso_min_dias: '' }
 
@@ -24,7 +27,14 @@ const ETIQUETA_SITUACAO: Record<PiqueteCadastro['situacao'], string> = {
   'Disponível': 'neutra',
 }
 
+// A ficha abre na mesma rota: /piquetes?ficha=1 (igual à ficha do animal).
 export function PiquetesPage() {
+  const [params] = useSearchParams()
+  const ficha = params.get('ficha')
+  return ficha ? <FichaPiquete key={ficha} id={ficha} /> : <ListaPiquetes />
+}
+
+function ListaPiquetes() {
   const { dados, ...estado } = useDados<PiqueteCadastro[]>('/piquetes')
   const { pode } = usePermissions()
   const form = useFormulario(VAZIO)
@@ -62,7 +72,8 @@ export function PiquetesPage() {
   }
 
   const colunas: Coluna<PiqueteCadastro>[] = [
-    { titulo: 'Piquete', valor: p => <strong>{p.nome}</strong> },
+    { titulo: 'Piquete', valor: p => <LinkFicha para={`/piquetes?ficha=${p.id_piquete}`}
+      titulo={`Ver os animais do piquete ${p.nome}`}>{p.nome}</LinkFicha>, csv: p => p.nome },
     { titulo: 'Área', valor: p => `${formatarNumero(p.area_ha, 2)} ha`, alinhar: 'direita' },
     { titulo: 'Lotação', valor: p => `${p.animais} de ${p.capacidade_max}`, alinhar: 'direita' },
     { titulo: 'Vagas', valor: p => p.vagas, alinhar: 'direita' },
