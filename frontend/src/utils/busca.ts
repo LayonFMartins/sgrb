@@ -1,7 +1,7 @@
 // Busca simples nas listas dos cadastros: ignora maiúsculas e acentos.
 // Ex.: "angus" encontra "Aberdeen Angus"; "sao" encontra "São Bento".
 export function normalizar(texto: string | number | null | undefined): string {
-  return String(texto ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR').trim()
+      return String(texto ?? '').normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('pt-BR').trim()
 }
 
 // true se o termo aparece em algum dos campos (termo vazio = mostra tudo).
