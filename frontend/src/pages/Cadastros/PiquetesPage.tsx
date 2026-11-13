@@ -51,8 +51,13 @@ export function PiquetesPage() {
   }
 
   async function excluir(p: PiqueteCadastro) {
+    // Mesmo aviso da tela de Raças: explica o motivo sem nem chamar a API.
+    if (p.animais_historico > 0) {
+      linha.mostrarAviso(`O piquete ${p.nome} não pode ser excluído: ${plural(p.animais_historico, 'animal já passou', 'animais já passaram')} por ele, e esse histórico precisa ser mantido.`)
+      return
+    }
     if (!(await confirmar({ titulo: 'Excluir piquete?', confirmar: 'Excluir', perigo: true,
-      mensagem: `O piquete ${p.nome} será removido. Piquetes que já tiveram animais não podem ser excluídos.` }))) return
+      mensagem: `O piquete ${p.nome} será removido do cadastro.` }))) return
     linha.executar(() => enviar(`/piquetes/${p.id_piquete}`, 'DELETE'), estado.recarregar)
   }
 

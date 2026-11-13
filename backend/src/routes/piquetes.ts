@@ -13,7 +13,9 @@ const NAO_ENCONTRADO = 'Piquete não encontrado.';
 const SELECT_PIQUETE = `
   SELECT v.id_piquete, v.nome, v.area_ha, v.capacidade_max, p.descanso_min_dias,
          v.animais::int AS animais, v.ocupacao_pct, v.vagas::int AS vagas,
-                  v.situacao, v.data_liberacao,
+         v.situacao, v.data_liberacao,
+         -- Quantos animais diferentes ja passaram pelo piquete (historico em ocupa).
+         -- Se for maior que zero, o banco nao deixa excluir (chave estrangeira).
          (SELECT count(DISTINCT o.brinco)::int FROM ocupa o
            WHERE o.id_piquete = v.id_piquete) AS animais_historico
     FROM vw_lotacao_piquete v
