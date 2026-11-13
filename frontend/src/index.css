@@ -44,6 +44,8 @@
   --success-bg: #eef4ea;
   --success-border: #b9cdb5;
   --shadow-color: 48 58 50;
+  --color-danger: #a63c32;
+  --color-danger-hover: #8c3229;
   --radius-control: 8px;
   --radius-card: 12px;
 
@@ -106,6 +108,8 @@ h1, p { margin: 0; }
     --success-bg: #1e2d23;
     --success-border: #3e5e48;
     --shadow-color: 0 0 0;
+    --color-danger: #b5463c;
+    --color-danger-hover: #9c3b32;
     color-scheme: dark;
   }
 }

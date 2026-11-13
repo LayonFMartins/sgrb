@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft, CalendarClock, ShieldAlert, Syringe } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { LinkAnimal } from '../../components/animais/LinkAnimal'
@@ -14,10 +14,16 @@ import { ETIQUETA_SITUACAO, idade, nomeSexo } from './animal'
 
 export function FichaAnimal({ brinco }: { brinco: string }) {
   const { dados: a, ...estado } = useDados<Ficha>(`/animais/${encodeURIComponent(brinco)}`)
+  // Volta para onde o usuário estava (lista filtrada, Início, um relatório...); sem origem, vai para a lista.
+  const origem = (useLocation().state as { voltar?: string } | null)?.voltar
+  const voltar = origem ?? '/animais'
+  const fichaAnterior = new URLSearchParams(voltar.split('?')[1]).get('ficha')
+  const rotuloVoltar = fichaAnterior ? `Voltar para o animal ${fichaAnterior}`
+    : voltar.startsWith('/animais') ? 'Voltar para a lista' : 'Voltar'
 
   return <>
     <header className="page-heading">
-      <Link to="/animais" className="ficha-voltar nao-imprimir"><ArrowLeft size={16} aria-hidden="true" />Voltar para a lista</Link>
+      <Link to={voltar} className="ficha-voltar nao-imprimir"><ArrowLeft size={16} aria-hidden="true" />{rotuloVoltar}</Link>
       <CabecalhoImpressao titulo="Ficha de rastreabilidade do animal" />
       <div className="ficha-titulo">
         <h1>Animal {brinco}</h1>

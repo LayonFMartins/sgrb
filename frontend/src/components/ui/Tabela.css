@@ -15,3 +15,33 @@
 .estado-carregando, .estado-erro { padding: 20px; border-radius: var(--radius-control); background: var(--color-surface); border: 1px solid var(--border-default); color: var(--color-text-secondary); }
 .estado-erro { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-color: var(--alert-error-border); color: var(--status-error); }
 .estado-erro button { padding: 8px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-primary); font-weight: 600; }
+
+/* Esqueleto de carregamento (EstadoDados) */
+.esqueleto { display: grid; gap: 10px; }
+.esqueleto__linha { height: 44px; border-radius: var(--radius-control); background: linear-gradient(90deg, var(--track) 25%, var(--color-surface) 50%, var(--track) 75%); background-size: 300% 100%; animation: esqueleto-brilho 1.4s ease-in-out infinite; }
+.esqueleto__linha:first-of-type { height: 36px; width: 100%; }
+.esqueleto__linha:nth-of-type(3) { width: 94%; }
+.esqueleto__linha:nth-of-type(4) { width: 82%; }
+@keyframes esqueleto-brilho { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .esqueleto__linha { animation: none; } }
+
+/* Celular: cada linha da tabela vira um cartão (sem rolagem para o lado).
+   Só na tela: na impressão a tabela continua tabela. */
+@media screen and (max-width: 700px) {
+  .tabela-rolagem { overflow: visible; border: 0; border-radius: 0; background: transparent; }
+  .tabela, .tabela tbody, .tabela tr, .tabela td { display: block; width: 100%; }
+  .tabela thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .tabela tbody { display: grid; gap: 10px; }
+  .tabela tbody tr { padding: 4px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); }
+  .tabela tbody tr:hover { background: var(--color-surface); }
+  .tabela td, .tabela .tabela--direita { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 9px 0; border-top: 1px solid var(--divider); text-align: right; white-space: normal; }
+  .tabela td::before { content: attr(data-label); flex-shrink: 0; max-width: 45%; color: var(--color-text-secondary); font-size: 12px; font-weight: 600; text-align: left; text-transform: uppercase; letter-spacing: .03em; }
+  /* Primeira coluna = título do cartão */
+  .tabela td:first-child { justify-content: flex-start; padding-top: 12px; border-top: 0; font-size: 16px; text-align: left; }
+  .tabela td:first-child::before { display: none; }
+  /* Botões de ação ocupam a linha toda no fim do cartão */
+  .tabela td.tabela__acoes { justify-content: flex-end; padding-bottom: 12px; }
+  .tabela td.tabela__acoes::before { display: none; }
+  .tabela td.tabela__acoes .acoes-linha { flex-wrap: wrap; justify-content: flex-end; }
+  .tabela .celula-dupla { justify-items: end; text-align: right; }
+}

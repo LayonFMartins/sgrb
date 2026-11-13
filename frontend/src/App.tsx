@@ -6,10 +6,12 @@ import { ModulePage, NotFoundPage } from './pages/InternalPages'
 import { InicioPage } from './pages/Inicio/InicioPage'
 import { navigation } from './navigation'
 import { PermissionGuard } from './auth/PermissionGuard'
+import { AvisoConexao } from './components/ui/AvisoConexao'
+import { ConfirmacaoProvider } from './components/ui/ConfirmacaoProvider'
 import './auth/session.css'
 
 function App() {
-  return <BrowserRouter><AuthProvider><Routes>
+  return <BrowserRouter><AvisoConexao /><ConfirmacaoProvider><AuthProvider><Routes>
     <Route path="/login" element={<LoginRoute />} />
     <Route element={<ProtectedRoute />}>
       <Route element={<AppLayout />}>
@@ -22,7 +24,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Route>
-  </Routes></AuthProvider></BrowserRouter>
+  </Routes></AuthProvider></ConfirmacaoProvider></BrowserRouter>
 }
 
 export default App
