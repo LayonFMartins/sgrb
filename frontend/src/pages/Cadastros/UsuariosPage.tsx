@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Pencil, Plus, UserCheck, UserX } from 'lucide-react'
 import { useAuth } from '../../auth/AuthContext'
 import { Can } from '../../auth/Can'
@@ -13,6 +12,9 @@ import { useAcaoLinha, useFormulario } from '../../hooks/useFormulario'
 import type { UsuarioCadastro } from '../../types/cadastros'
 import { combina } from '../../utils/busca'
 import { enviar } from '../../utils/enviar'
+import { useParametro } from '../../hooks/useParametro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { Vazio } from '../../components/ui/Vazio'
 
 const VAZIO = { nome: '', funcao: '', tipo: 'FUNCIONARIO', acesso: false, email: '', senha: '' }
 
@@ -24,8 +26,9 @@ export function UsuariosPage() {
   const { pode } = usePermissions()
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
+  const confirmar = useConfirmacao()
   const f = form.valores
-  const [busca, setBusca] = useState('')
+  const [busca, setBusca] = useParametro('busca')
   const visiveis = (dados ?? []).filter(u => combina(busca, u.nome, u.funcao, u.email,
     u.tipo === 'PROPRIETARIO' ? 'Proprietário' : 'Funcionário', u.ativo ? 'Ativo' : 'Inativo'))
   // Na edição de quem já tem login, a senha em branco mantém a atual.
@@ -52,8 +55,9 @@ export function UsuariosPage() {
     })
   }
 
-  function alternarAtivo(u: UsuarioCadastro) {
-    if (u.ativo && !window.confirm(`Desativar ${u.nome}? Ele(a) não poderá mais entrar nem ser responsável por novos manejos.`)) return
+  async function alternarAtivo(u: UsuarioCadastro) {
+    if (u.ativo && !(await confirmar({ titulo: `Desativar ${u.nome}?`, confirmar: 'Desativar', perigo: true,
+      mensagem: 'Ele(a) não poderá mais entrar no sistema nem ser responsável por novos manejos. O histórico continua guardado, e dá para reativar depois.' }))) return
     linha.executar(() => enviar(`/usuarios/${u.id_usuario}/${u.ativo ? 'desativar' : 'ativar'}`, 'PATCH'), estado.recarregar)
   }
 
@@ -123,7 +127,9 @@ export function UsuariosPage() {
       <EstadoDados {...estado}>
         {dados && <Tabela legenda="Usuários" colunas={colunas} linhas={visiveis}
           chave={u => String(u.id_usuario)}
-          vazio={busca.trim() ? 'Nenhum usuário encontrado para essa busca.' : 'Nenhum usuário cadastrado.'} />}
+          vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')}
+            titulo="Nenhum usuário cadastrado ainda" texto="Cadastre quem vai usar o sistema e ser responsável pelos manejos."
+            acao={!form.aberto && { rotulo: 'Cadastrar o primeiro usuário', permissao: 'usuarios.criar', onClick: form.abrirNovo }} />} />}
       </EstadoDados>
     </section>
   </>

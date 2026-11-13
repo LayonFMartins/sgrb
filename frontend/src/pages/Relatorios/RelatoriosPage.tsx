@@ -9,6 +9,7 @@ import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { LotacaoPiquetes } from '../../components/consultas/LotacaoPiquetes'
 import { AcoesImpressao, CabecalhoImpressao } from '../../components/relatorios/Impressao'
 import type { Campanha, Carencia, GmdAnimal, GmdGrupo, Lote, Piquete, Rastreio, Reforco, ResultadoVenda } from '../../types/consultas'
+import { useParametro } from '../../hooks/useParametro'
 import { baixarCsv, exportarTabela } from '../../utils/csv'
 import { formatarData, formatarNumero, formatarPeso, plural } from '../../utils/formatar'
 import './Relatorios.css'
@@ -114,7 +115,7 @@ function Lotacao() {
 /* ---------- GMD ---------- */
 
 const colunasGmdAnimal: Coluna<GmdAnimal>[] = [
-  { titulo: '#', valor: g => g.posicao, alinhar: 'direita' },
+  { titulo: '#', valor: g => `${g.posicao}º`, alinhar: 'direita', csv: g => g.posicao },
   { titulo: 'Brinco', valor: g => <LinkAnimal brinco={g.brinco} />, csv: g => g.brinco },
   { titulo: 'Raça', valor: g => g.raca },
   { titulo: 'Categoria', valor: g => g.categoria },
@@ -130,8 +131,16 @@ const AGRUPAMENTOS = [['animal', 'Por animal'], ['raca', 'Por raça'], ['fornece
 type Agrupamento = typeof AGRUPAMENTOS[number][0]
 
 function Gmd() {
-  const [agrupar, setAgrupar] = useState<Agrupamento>('animal')
-  const [periodo, setPeriodo] = useState({ inicio: '', fim: '' })
+  // Filtros no endereço (?aba=gmd&agrupar=raca&de=2026-01-01): o link já abre filtrado
+  const [agruparUrl, setAgruparUrl] = useParametro('agrupar', 'animal')
+  const agrupar = (AGRUPAMENTOS.some(a => a[0] === agruparUrl) ? agruparUrl : 'animal') as Agrupamento
+  const setAgrupar = (valor: Agrupamento) => setAgruparUrl(valor)
+  const [de, setDe] = useParametro('de')
+  const [ate, setAte] = useParametro('ate')
+  const periodo = { inicio: de, fim: ate }
+  const [, setParams] = useSearchParams()
+  // Limpa as duas datas numa única alteração do endereço
+  const limparPeriodo = () => setParams(p => { p.delete('de'); p.delete('ate'); return p }, { replace: true })
   const periodoInvalido = Boolean(periodo.inicio && periodo.fim && periodo.inicio > periodo.fim)
   const consulta = new URLSearchParams({ agrupar })
   if (!periodoInvalido) {
@@ -161,11 +170,11 @@ function Gmd() {
       <Seletor rotulo="Agrupar ranking por" opcoes={AGRUPAMENTOS} valor={agrupar} onChange={setAgrupar} />
       <div className="consulta__periodo">
         <Input label="De" type="date" value={periodo.inicio} max={periodo.fim || undefined}
-          onChange={e => setPeriodo(p => ({ ...p, inicio: e.target.value }))} />
+          onChange={e => setDe(e.target.value)} />
         <Input label="Até" type="date" value={periodo.fim} min={periodo.inicio || undefined}
-          onChange={e => setPeriodo(p => ({ ...p, fim: e.target.value }))} />
+          onChange={e => setAte(e.target.value)} />
         {(periodo.inicio || periodo.fim) && <button type="button" className="acao-linha consulta__limpar"
-          onClick={() => setPeriodo({ inicio: '', fim: '' })}>Todo o período</button>}
+          onClick={limparPeriodo}>Todo o período</button>}
       </div>
     </div>
     {periodoInvalido
@@ -226,7 +235,8 @@ const colunasReforcos: Coluna<Reforco>[] = [
 ]
 
 function Reforcos() {
-  const [filtro, setFiltro] = useState<'atrasados' | 'todos'>('atrasados')
+  const [filtroUrl, setFiltro] = useParametro('mostrar', 'atrasados')
+  const filtro = filtroUrl === 'todos' ? 'todos' : 'atrasados'
   const { dados, ...estado } = useDados<Reforco[]>(`/consultas/reforcos${filtro === 'atrasados' ? '?situacao=Atrasado' : ''}`)
   return <>
     <Descricao titulo="Reforços e próximas doses" filtro={filtro === 'atrasados' ? 'Somente atrasados' : 'Todas as doses programadas'}

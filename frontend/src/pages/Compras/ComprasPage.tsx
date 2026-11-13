@@ -264,7 +264,7 @@ export function ComprasPage() {
         </section>
 
         {erro && <p className="cadastro-form__erro" role="alert">{erro}</p>}
-        <div className="cadastro-form__botoes">
+        <div className="cadastro-form__botoes compra__acoes">
           <button type="button" className="botao-secundario" onClick={limpar} disabled={salvando}>Limpar</button>
           <Button type="submit" loading={salvando} className="cadastro-form__salvar">Registrar compra</Button>
         </div>

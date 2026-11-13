@@ -1,0 +1,11 @@
+/* Estado vazio das listas (Vazio.tsx) */
+.vazio { display: grid; justify-items: center; gap: 8px; padding: 32px 20px; border: 1px dashed var(--border-default); border-radius: var(--radius-control); text-align: center; font-family: var(--font-functional); }
+.vazio__icone { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 4px; border-radius: 50%; background: var(--color-background); color: var(--sidebar-icon, var(--color-primary)); }
+.vazio__titulo { margin: 0; color: var(--color-text); font-size: 15px; font-weight: 600; }
+.vazio__texto { max-width: 46ch; margin: 0; color: var(--color-text-secondary); font-size: 14px; line-height: 1.5; }
+.vazio__botao { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 8px; padding: 10px 18px; border: 0; border-radius: var(--radius-control); background: var(--color-button); color: var(--color-on-button); font-size: 14px; font-weight: 600; text-decoration: none; }
+.vazio__botao:hover { background: var(--color-button-hover); }
+.vazio__botao--secundario { border: 1px solid var(--border-default); background: var(--color-surface); color: var(--color-text); }
+.vazio__botao--secundario:hover { background: var(--color-background); }
+@media print { .vazio__botao { display: none; } }
+.vazio a.vazio__botao, .vazio a.vazio__botao:visited, .vazio a.vazio__botao:hover { color: var(--color-on-button); }

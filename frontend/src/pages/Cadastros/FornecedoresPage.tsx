@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Pencil, Plus, Trash2, X } from 'lucide-react'
 import { Can } from '../../auth/Can'
 import { usePermissions } from '../../auth/permissions'
@@ -14,6 +13,9 @@ import { enviar } from '../../utils/enviar'
 import { combina } from '../../utils/busca'
 import { plural } from '../../utils/formatar'
 import { mascararTelefone, telefoneCompleto } from '../../utils/telefone'
+import { useParametro } from '../../hooks/useParametro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { Vazio } from '../../components/ui/Vazio'
 
 const VAZIO = { nome_produtor: '', nome_propriedade: '', municipio: '', uf: '', telefones: [''] }
 
@@ -26,8 +28,9 @@ export function FornecedoresPage() {
   const { pode } = usePermissions()
   const form = useFormulario(VAZIO)
   const linha = useAcaoLinha()
+  const confirmar = useConfirmacao()
   const f = form.valores
-  const [busca, setBusca] = useState('')
+  const [busca, setBusca] = useParametro('busca')
   const visiveis = (dados ?? []).filter(x => combina(busca, x.nome_produtor, x.nome_propriedade,
     x.municipio, x.uf, ...x.telefones, ...x.telefones.map(t => t.replace(/\D/g, ''))))
 
@@ -52,8 +55,9 @@ export function FornecedoresPage() {
     })
   }
 
-  function excluir(x: Fornecedor) {
-    if (!window.confirm(`Excluir o fornecedor ${x.nome_produtor}?`)) return
+  async function excluir(x: Fornecedor) {
+    if (!(await confirmar({ titulo: 'Excluir fornecedor?', confirmar: 'Excluir', perigo: true,
+      mensagem: `${x.nome_produtor} será removido do cadastro. Fornecedores com compras registradas não podem ser excluídos.` }))) return
     linha.executar(() => enviar(`/fornecedores/${x.id_fornecedor}`, 'DELETE'), estado.recarregar)
   }
 
@@ -117,7 +121,9 @@ export function FornecedoresPage() {
       <EstadoDados {...estado}>
         {dados && <Tabela legenda="Fornecedores" colunas={colunas} linhas={visiveis}
           chave={x => String(x.id_fornecedor)}
-          vazio={busca.trim() ? 'Nenhum fornecedor encontrado para essa busca.' : 'Nenhum fornecedor cadastrado.'} />}
+          vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')}
+            titulo="Nenhum fornecedor cadastrado ainda" texto="Fornecedores são os produtores de quem a fazenda compra animais. Eles aparecem na tela de Compras."
+            acao={!form.aberto && { rotulo: 'Cadastrar o primeiro fornecedor', permissao: 'fornecedores.criar', onClick: form.abrirNovo }} />} />}
       </EstadoDados>
     </section>
   </>

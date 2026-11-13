@@ -1,4 +1,5 @@
 import type { Permissao, TipoUsuario } from './permissions'
+import { acompanharRequisicao } from './conexao'
 
 export interface Usuario {
   id: number
@@ -28,11 +29,14 @@ export async function solicitar<T>(path: string, options: RequestInit = {}): Pro
   const token = lerToken()
   if (token && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`)
   let response: Response
+  const terminar = acompanharRequisicao() // avisa a tela se o servidor demorar (Render acordando)
   try {
     response = await fetch(`/api${path}`, { ...options, headers })
   } catch (error) {
     if (options.signal?.aborted) throw error
     throw new Error('Não foi possível conectar ao servidor. Tente novamente.', { cause: error })
+  } finally {
+    terminar()
   }
   const body = await response.json().catch(() => null)
   if (response.status === 401 && path !== '/auth/login') {

@@ -8,6 +8,8 @@ import { useDados } from '../../hooks/useDados'
 import { formatarData, plural } from '../../utils/formatar'
 import '../Relatorios/Relatorios.css'
 import './Gta.css'
+import { useParametro } from '../../hooks/useParametro'
+import { Vazio } from '../../components/ui/Vazio'
 
 // Formato de GET /api/gta (backend/src/routes/gta.ts)
 interface Gta {
@@ -50,8 +52,10 @@ const colunas: Coluna<Gta>[] = [
 ]
 
 export function GtaPage() {
-  const [filtro, setFiltro] = useState<Filtro>('TODAS')
-  const [busca, setBusca] = useState('')
+  const [tipo, setTipo] = useParametro('tipo', 'TODAS')
+  const filtro = (FILTROS.some(f => f.id === tipo) ? tipo : 'TODAS') as Filtro
+  const setFiltro = (valor: Filtro) => setTipo(valor)
+  const [busca, setBusca] = useParametro('busca')
   const { dados, ...estado } = useDados<Gta[]>('/gta')
 
   const gtas = dados ?? []
@@ -72,14 +76,18 @@ export function GtaPage() {
         <div className="seletor" role="group" aria-label="Filtrar por tipo">
           {FILTROS.map(f => <button key={f.id} type="button" aria-pressed={filtro === f.id}
             className={`seletor__botao${filtro === f.id ? ' seletor__botao--ativo' : ''}`}
-            onClick={() => setFiltro(f.id)}>{f.rotulo} <span className="seletor__qtd">{total(f.id)}</span></button>)}
+            onClick={() => setFiltro(f.id)}>{f.rotulo}{dados && <> <span className="seletor__qtd">{total(f.id)}</span></>}</button>)}
         </div>
         <Input label="Buscar" className="gta-busca" type="search" value={busca} placeholder="Número, origem, destino ou brinco"
           icon={<Search size={16} />} onChange={e => setBusca(e.target.value)} />
       </div>
       <EstadoDados {...estado}>
         {dados && <Tabela legenda="Guias de trânsito" colunas={colunas} linhas={visiveis} chave={g => g.numero_gta}
-          vazio={termo ? 'Nenhuma GTA encontrada para essa busca.' : 'Nenhuma GTA registrada.'} />}
+          vazio={gtas.length === 0
+            ? <Vazio titulo="Nenhuma GTA registrada ainda" texto="As GTAs de entrada são criadas ao registrar uma compra, e as de saída, ao registrar uma venda."
+              acao={{ rotulo: 'Registrar uma compra', permissao: 'compras.criar', para: '/compras' }} />
+            : <Vazio busca={busca} onLimparBusca={() => setBusca('')}
+              titulo={`Nenhuma GTA de ${filtro === 'ENTRADA' ? 'entrada' : 'saída'}`} />} />}
       </EstadoDados>
     </section>
   </>
