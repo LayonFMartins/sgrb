@@ -5,7 +5,7 @@ import { EstadoDados } from '../../components/ui/EstadoDados'
 import { Tabela, type Coluna } from '../../components/ui/Tabela'
 import { useDados } from '../../hooks/useDados'
 import type { CompraFornecedor, Fornecedor } from '../../types/cadastros'
-import { formatarData, formatarNumero, plural } from '../../utils/formatar'
+import { formatarData, formatarNumero } from '../../utils/formatar'
 import '../Animais/Animais.css'
 import './FichaFornecedor.css'
 
