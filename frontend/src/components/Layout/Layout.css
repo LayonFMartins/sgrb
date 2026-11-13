@@ -29,8 +29,14 @@
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .app-body { min-width: 0; }
 .app-header { min-height: 88px; display: flex; align-items: center; gap: 24px; padding: 20px 32px; background: var(--color-surface); border-bottom: 1px solid var(--border-default); }
+.header-centro { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; }
+.header-marca { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; border-radius: var(--radius-control); color: var(--color-text); text-decoration: none; }
+.header-marca:hover .header-marca__boi { background-color: var(--color-button); }
+.header-marca:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
+.header-marca__boi { flex-shrink: 0; width: 40px; height: 40px; background-color: var(--color-accent); mask: url('../../assets/boi.svg') center / contain no-repeat; transition: background-color .15s; }
 .header-page { font-weight: 600; }
-.header-user { display: grid; gap: 4px; margin-left: auto; font-size: 14px; overflow-wrap: anywhere; }
+.header-user { display: grid; gap: 4px; font-size: 14px; text-align: right; overflow-wrap: anywhere; }
+.sidebar-fechar, .menu-fundo { display: none; }
 .header-user span { font-size: 12px; color: var(--color-text-secondary); }
 .logout-button, .menu-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-primary); }
 .menu-toggle { display: none; }
@@ -56,8 +62,12 @@
 }
 @media (max-width: 800px) {
   .app-shell { display: block; }
-  .sidebar { display: none; position: static; height: auto; gap: 24px; padding: 24px; }
-  .sidebar--open { display: flex; }
+  /* Menu do celular: gaveta que desliza da esquerda POR CIMA da página (não empurra o conteúdo) */
+  .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 40; width: min(300px, 85vw); height: 100dvh; gap: 24px; padding: 20px; border-right: 1px solid var(--border-default); box-shadow: 8px 0 32px rgb(var(--shadow-color) / .25); transform: translateX(-100%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
+  .sidebar--open { transform: none; visibility: visible; transition: transform .25s ease; }
+  .menu-fundo { display: block; position: fixed; inset: 0; z-index: 30; background: rgb(var(--shadow-color) / .45); animation: menu-fundo-entrar .2s ease; }
+  body.menu-aberto { overflow: hidden; }
+  .sidebar-fechar { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: transparent; color: var(--sidebar-icon); }
   .sidebar-footer { display: none; }
   .sidebar-collapse { display: none; }
   .nav-item { min-height: 44px; }
@@ -66,5 +76,13 @@
   .menu-toggle { display: inline-flex; }
   .mobile-logout { display: inline-flex; }
   .header-page { display: none; }
-  .header-user { font-size: 13px; }
+  /* Marca + usuário centralizados entre o botão do menu e o "Sair" */
+  .header-centro { justify-content: center; gap: 10px; }
+  .header-marca__boi { width: 34px; height: 34px; }
+  .header-user { font-size: 13px; text-align: left; }
+}
+@keyframes menu-fundo-entrar { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .sidebar--open { transition: none; }
+  .menu-fundo { animation: none; }
 }
