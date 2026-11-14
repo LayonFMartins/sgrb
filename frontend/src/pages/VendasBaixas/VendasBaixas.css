@@ -1,0 +1,28 @@
+/* Tela de Vendas e baixas (usa também .compra* de Compras.css e .abas de Relatorios.css) */
+
+.vendas-abas { margin-top: 4px; }
+.vendas-painel { border-top-left-radius: 0; }
+
+/* Busca de animais para adicionar */
+.escolher-animal { display: grid; gap: 10px; }
+.escolher-animal__lista { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.escolher-animal__item { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--border-default); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); font-size: 14px; text-align: left; cursor: pointer; }
+.escolher-animal__item:hover, .escolher-animal__item:focus-visible { border-color: var(--color-primary); background: var(--sidebar-hover); }
+.escolher-animal__item svg { color: var(--color-primary); }
+
+/* Animal escolhido na venda */
+.venda-animal { display: grid; grid-template-columns: minmax(150px, 1.2fr) repeat(2, minmax(130px, 1fr)) auto; gap: 12px 16px; align-items: end; margin: 0; padding: 14px 16px; border: 1px solid var(--border-default); border-radius: var(--radius-control); }
+.venda-animal--carencia { border-color: var(--alert-error-border); background: var(--alert-error-bg); }
+.venda-animal__info { display: grid; gap: 4px; align-self: center; font-size: 14px; }
+.venda-animal__info .etiqueta { width: fit-content; }
+@media (max-width: 700px) { .venda-animal { grid-template-columns: 1fr 1fr; } .venda-animal__info { grid-column: 1 / -1; } }
+
+/* Resumo da carga e da lista */
+.venda-resumo { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--color-text-secondary); }
+.venda-resumo strong { color: var(--color-text); }
+
+/* Óbito: animal escolhido */
+.obito-animal { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 12px 14px; border: 1px solid var(--border-default); border-radius: var(--radius-control); font-size: 14px; }
+
+/* Número da GTA numa linha só na lista */
+.vendas-painel .link-animal { white-space: nowrap; }
