@@ -12,6 +12,7 @@ import { RacasPage } from './pages/Cadastros/RacasPage'
 import { ComprasPage } from './pages/Compras/ComprasPage'
 import { GtaPage } from './pages/Gta/GtaPage'
 import { ConfiguracoesPage } from './pages/Configuracoes/ConfiguracoesPage'
+import { VendasBaixasPage } from './pages/VendasBaixas/VendasBaixasPage'
 
 interface NavigationItemBase {
   path: string
@@ -39,7 +40,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
   ] },
   { id: 'operacoes', label: 'Operações', items: [
     { path: '/compras', label: 'Compras', icon: ShoppingCart, permissao: 'compras.criar', pagina: ComprasPage },
-    { path: '/vendas-baixas', label: 'Vendas e baixas', icon: CircleMinus, futuro: true },
+    { path: '/vendas-baixas', label: 'Vendas e baixas', icon: CircleMinus, permissao: 'baixas.visualizar', pagina: VendasBaixasPage },
     { path: '/gta', label: 'Guias de trânsito (GTA)', icon: FileText, permissao: 'gta.visualizar', pagina: GtaPage },
   ] },
   { id: 'cadastros', label: 'Cadastros', items: [
