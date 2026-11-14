@@ -38,6 +38,8 @@ const MENSAGENS_CONSTRAINT: Record<string, string> = {
   uk_raca_nome: 'Já existe uma raça com esse nome.',
   uk_piquete_nome: 'Já existe um piquete com esse nome.',
   uk_produto_nome: 'Já existe um produto com esse nome.',
+  ck_venda_peso: 'O peso final deve ser maior que zero.',
+  ck_venda_valor: 'O valor da venda deve ser maior que zero.',
   uk_baixa_animal: 'Esse animal já tem baixa registrada.',
   pk_animal: 'Já existe um animal com esse brinco.',
   pk_pesagem: 'Esse animal já tem pesagem nessa data.',

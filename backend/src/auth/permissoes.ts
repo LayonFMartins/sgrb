@@ -4,6 +4,7 @@ export const permissoesConhecidas = [
   'animais.visualizar', 'animais.criar', 'animais.editar', 'animais.excluir',
   'racas.visualizar', 'racas.criar', 'racas.editar', 'racas.excluir',
   'compras.criar', 'gta.visualizar',
+  'baixas.visualizar', 'vendas.criar', 'obitos.criar',
   'fornecedores.visualizar', 'fornecedores.criar', 'fornecedores.editar', 'fornecedores.excluir',
   'piquetes.visualizar', 'piquetes.criar', 'piquetes.editar', 'piquetes.excluir',
   'produtos.visualizar', 'produtos.criar', 'produtos.editar', 'produtos.excluir',
@@ -22,6 +23,7 @@ const permissoesPorPerfil: Record<TipoUsuario, readonly Permissao[]> = {
     'animais.visualizar', 'animais.criar', 'animais.editar', 'animais.excluir',
     'racas.visualizar', 'racas.criar', 'racas.editar', 'racas.excluir',
     'compras.criar', 'gta.visualizar',
+    'baixas.visualizar', 'vendas.criar', 'obitos.criar',
     'fornecedores.visualizar', 'fornecedores.criar', 'fornecedores.editar', 'fornecedores.excluir',
     'piquetes.visualizar', 'piquetes.criar', 'piquetes.editar', 'piquetes.excluir',
     'produtos.visualizar', 'produtos.criar', 'produtos.editar', 'produtos.excluir',
@@ -31,6 +33,8 @@ const permissoesPorPerfil: Record<TipoUsuario, readonly Permissao[]> = {
   // Funcionario so consulta: as listas abastecem os formularios de manejo.
   FUNCIONARIO: [
     'inicio.visualizar', 'animais.visualizar', 'racas.visualizar', 'gta.visualizar',
+    // Óbito é registrado por quem está no campo; venda fica só com o proprietário.
+    'baixas.visualizar', 'obitos.criar',
     'fornecedores.visualizar', 'piquetes.visualizar', 'produtos.visualizar', 'usuarios.visualizar',
     'consultas.visualizar', 'configuracoes.visualizar',
   ],
