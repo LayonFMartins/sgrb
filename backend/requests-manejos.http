@@ -1,0 +1,280 @@
+### Testes dos manejos: pesagens, aplicacoes, movimentacoes e desfazer baixa
+### Extensao "REST Client" do VS Code. O backend precisa estar rodando (npm run dev:backend).
+### Os exemplos usam os dados de 03_povoamento.sql. Cada POST de sucesso grava no banco:
+### para repetir um teste, mude a data ou rode de novo o sgrb_completo.sql.
+### Usuarios: 1 Joao (vaqueiro), 2 Pedro (INATIVO), 3 Ana (veterinaria), 4 Marcos (vaqueiro), 5 Carlos (proprietario)
+### Animais ativos: 0001 0002 0003 0101 0103 0110 0201 0207. Ja sairam: 0204 (obito, baixa 1) e 0107 (vendido, baixa 2).
+
+@api = http://localhost:3000/api
+@tokenP = {{loginProprietario.response.body.token}}
+@tokenF = {{loginFuncionario.response.body.token}}
+
+### Login do proprietario
+# @name loginProprietario
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "proprietario@example.com", "senha": "sgrb123" }
+
+### Login da funcionaria
+# @name loginFuncionario
+POST {{api}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "senha": "sgrb123" }
+
+
+### ===================== PESAGENS =====================
+
+### 1. Historico de um animal (com GMD desde a pesagem anterior)
+GET {{api}}/pesagens?brinco=0101
+Authorization: Bearer {{tokenF}}
+
+### 2. Pesagem de um animal. Responsavel = Marcos (id 4), que nao tem login. Deve dar 201
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0001", "data_pesagem": "2026-11-10", "peso_kg": 520, "id_usuario": 4 }
+
+### 3. A mesma pesagem de novo (409: ja tem pesagem nessa data)
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0001", "data_pesagem": "2026-11-10", "peso_kg": 521, "id_usuario": 4 }
+
+### 4. Pesagem em lote, uma data e um responsavel para varios animais. Deve dar 201
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{
+  "data_pesagem": "2026-11-10", "id_usuario": 4,
+  "pesagens": [
+    { "brinco": "0002", "peso_kg": 498.5 },
+    { "brinco": "0003", "peso_kg": 531 }
+  ]
+}
+
+### 5. Antes do nascimento (400: RI-16). O 0207 nasceu em 2026-06-05
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0207", "data_pesagem": "2026-05-01", "peso_kg": 30, "id_usuario": 4 }
+
+### 6. Depois da baixa (400: RI-22). O 0204 morreu em 2026-04-02
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0204", "data_pesagem": "2026-04-10", "peso_kg": 70, "id_usuario": 4 }
+
+### 7. Responsavel inativo (400: RI-26). Pedro (id 2) esta inativo
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0207", "data_pesagem": "2026-11-10", "peso_kg": 120, "id_usuario": 2 }
+
+### 8. Data no futuro (400)
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0207", "data_pesagem": "2027-01-01", "peso_kg": 120, "id_usuario": 4 }
+
+### 9. Animal que nao existe (404)
+POST {{api}}/pesagens
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "9999", "data_pesagem": "2026-11-10", "peso_kg": 120, "id_usuario": 4 }
+
+
+### ===================== APLICACOES SANITARIAS =====================
+
+### 10. Historico de um animal (com a data de liberacao da carencia)
+GET {{api}}/aplicacoes?brinco=0101
+Authorization: Bearer {{tokenF}}
+
+### 11. Antirrabica (produto 2) em lote. Dose unica: num_dose = 1. Deve dar 201
+POST {{api}}/aplicacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{
+  "brincos": ["0001", "0002", "0003"],
+  "id_produto": 2, "data_aplicacao": "2026-11-10",
+  "id_usuario": 3, "lote_medicamento": "RAB-26-0101"
+}
+
+### 12. Clostridioses (produto 3, 2 doses). Primeira aplicacao: o sistema calcula a dose 1
+POST {{api}}/aplicacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0207", "id_produto": 3, "data_aplicacao": "2026-10-10", "id_usuario": 3, "lote_medicamento": "CLO-26-0310" }
+
+### 13. Segunda aplicacao, 30 dias depois: o sistema calcula a dose 2 (e avisa a carencia de 21 dias)
+POST {{api}}/aplicacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0207", "id_produto": 3, "data_aplicacao": "2026-11-09", "id_usuario": 3, "lote_medicamento": "CLO-26-0310" }
+
+### 14. Brucelose (produto 1) so para femea de 3 a 8 meses: o 0101 e macho (400: RI-14)
+POST {{api}}/aplicacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0101", "id_produto": 1, "data_aplicacao": "2026-11-10", "id_usuario": 3, "lote_medicamento": "B19-26-0001" }
+
+### 15. Mesma aplicacao repetida (409)
+POST {{api}}/aplicacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{
+  "brincos": ["0001"], "id_produto": 2, "data_aplicacao": "2026-11-10",
+  "id_usuario": 3, "lote_medicamento": "RAB-26-0101"
+}
+
+### 16. Dose maior que o numero de doses do produto (400)
+POST {{api}}/aplicacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0110", "id_produto": 4, "data_aplicacao": "2026-11-10", "id_usuario": 1, "lote_medicamento": "IVM-26-0900", "num_dose": 2 }
+
+### 17. Sem lote (400)
+POST {{api}}/aplicacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brinco": "0110", "id_produto": 4, "data_aplicacao": "2026-11-10", "id_usuario": 1 }
+
+
+### ===================== MOVIMENTACOES =====================
+
+### 18. Historico de ocupacao de um animal
+GET {{api}}/movimentacoes?brinco=0001
+Authorization: Bearer {{tokenF}}
+
+### 19. Mover 3 animais do P01 para o P02. Deve dar 201 (a saida do P01 e a entrada no P02 sao gravadas juntas)
+POST {{api}}/movimentacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brincos": ["0001", "0002", "0003"], "id_piquete": 2, "data_movimentacao": "2026-11-10" }
+
+### 20. Animal que ja esta no piquete de destino (409). O 0101 esta no P05
+POST {{api}}/movimentacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brincos": ["0101"], "id_piquete": 5, "data_movimentacao": "2026-11-10" }
+
+### 21. Data anterior a ultima entrada (400). O 0101 entrou no P05 em 2025-11-01
+POST {{api}}/movimentacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brincos": ["0101"], "id_piquete": 1, "data_movimentacao": "2025-10-01" }
+
+### 22. Animal que ja saiu do rebanho (409). O 0204 morreu
+POST {{api}}/movimentacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brincos": ["0204"], "id_piquete": 1, "data_movimentacao": "2026-11-10" }
+
+### 23. Piquete que nao existe (404)
+POST {{api}}/movimentacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brincos": ["0101"], "id_piquete": 99, "data_movimentacao": "2026-11-10" }
+
+### 24. Piquete lotado (400: RI-09). Primeiro crie um piquete de capacidade 1 (esta requisicao); depois rode a 24b
+# @name novoPiquete
+POST {{api}}/piquetes
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "nome": "P99 - Teste", "area_ha": 1, "capacidade_max": 1, "descanso_min_dias": 0 }
+
+###
+# 24b. Mover 2 animais para o piquete de capacidade 1 (o segundo nao cabe e nada e gravado).
+# Troque o 7 pelo id_piquete que a resposta acima devolveu
+POST {{api}}/movimentacoes
+Authorization: Bearer {{tokenF}}
+Content-Type: application/json
+
+{ "brincos": ["0201", "0207"], "id_piquete": 7, "data_movimentacao": "2026-11-12" }
+
+
+### ===================== DESFAZER BAIXA =====================
+
+### 25. Lista as saidas: confira os id_baixa (0204 = obito, 0107 = venda)
+GET {{api}}/baixas
+Authorization: Bearer {{tokenP}}
+
+### ===================== DESFAZER BAIXA (testes novos) =====================
+
+### A1. Registra um obito de teste no 0201 (deve dar 201)
+POST {{api}}/baixas/obitos
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{ "brinco": "0201", "data_obito": "2026-11-12", "causa": "Teste do desfazer baixa" }
+
+### A2. Lista as saidas: copie o id_baixa do 0201
+GET {{api}}/baixas
+Authorization: Bearer {{tokenP}}
+
+### A3. A funcionaria NAO pode desfazer (deve dar 403). Troque o 99 pelo id_baixa do A2
+DELETE {{api}}/baixas/3
+Authorization: Bearer {{tokenF}}
+
+### A4. O proprietario desfaz (deve dar 200). Troque o 99 pelo id_baixa do A2
+DELETE {{api}}/baixas/3
+Authorization: Bearer {{tokenP}}
+
+### A5. Conferir: o 0201 deve estar Ativo e de volta ao piquete P03 - Represa
+GET {{api}}/animais/0201
+Authorization: Bearer {{tokenP}}
+
+### B1. Venda de teste do 0110 com GTA de saida, finalidade ENGORDA (a de ABATE bloquearia pela carencia). Deve dar 201
+POST {{api}}/baixas/vendas
+Authorization: Bearer {{tokenP}}
+Content-Type: application/json
+
+{
+  "comprador": "Comprador de Teste", "data_venda": "2026-11-12",
+  "gta": { "numero_gta": "MG-26-0099001", "data_emissao": "2026-11-12",
+           "origem": "Fazenda São Bento - Itabira/MG", "destino": "Fazenda de Teste",
+           "finalidade": "ENGORDA" },
+  "animais": [ { "brinco": "0110", "peso_final_kg": 550, "valor_venda": 9000 } ]
+}
+
+### B2. Lista as saidas: copie o id_baixa do 0110
+GET {{api}}/baixas
+Authorization: Bearer {{tokenP}}
+
+### B3. Desfaz a venda (deve dar 200). Troque o 99 pelo id_baixa do B2
+DELETE {{api}}/baixas/4
+Authorization: Bearer {{tokenP}}
+
+### B4. Conferir: a GTA MG-26-0099001 nao deve mais aparecer
+GET {{api}}/gta?tipo=SAIDA
+Authorization: Bearer {{tokenP}}
+
+### Lista os piquetes (para achar o id do P99 - Teste)
+GET {{api}}/piquetes
+Authorization: Bearer {{tokenP}}
+
+### Limpeza: apagar o piquete de teste (troque o 7 pelo id do teste 24)
+DELETE {{api}}/piquetes/7
+Authorization: Bearer {{tokenP}}
