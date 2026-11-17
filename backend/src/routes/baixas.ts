@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { PoolClient } from 'pg';
 import { pool } from '../db/pool.js';
 import { emTransacao } from '../db/transacao.js';
-import { numeroObrigatorio, textoObrigatorio } from '../db/campos.js';
+import { idDaRota, numeroObrigatorio, textoObrigatorio } from '../db/campos.js';
 import { ErroHttp } from '../middleware/erros.js';
 import { exigirPermissao } from '../middleware/auth.js';
 
@@ -153,4 +153,63 @@ baixasRouter.post('/obitos', exigirPermissao('obitos.criar'), async (req, res) =
   });
 
   res.status(201).json({ mensagem: `Óbito do animal ${brinco} registrado.` });
+});
+
+
+baixasRouter.delete('/:id', exigirPermissao('baixas.desfazer'), async (req, res) => {
+  const idBaixa = idDaRota(req.params.id, 'Baixa não encontrada.');
+
+  const resultado = await emTransacao(async (client) => {
+    const { rows } = await client.query<{ brinco: string; data_baixa: string; motivo: string }>(
+      'SELECT brinco, data_baixa, motivo FROM baixa WHERE id_baixa = $1 FOR UPDATE', [idBaixa]);
+    const baixa = rows[0];
+    if (!baixa) throw new ErroHttp(404, 'Baixa não encontrada.');
+
+    await client.query('DELETE FROM baixa WHERE id_baixa = $1', [idBaixa]);
+
+    if (baixa.motivo === 'VENDA') {
+      await client.query(
+        `DELETE FROM transita_com t USING gta g
+          WHERE t.numero_gta = g.numero_gta AND g.tipo = 'SAIDA' AND t.brinco = $1`,
+        [baixa.brinco]
+      );
+    }
+
+    // A baixa fechou a ocupacao aberta na data da baixa (RI-21). O trigger de lotacao so
+    // roda na ENTRADA, nao quando reabrimos com UPDATE de data_saida: conferimos a vaga aqui.
+    const ocupacao = await client.query<{ data_entrada: string; id_piquete: number; nome: string; capacidade_max: number }>(
+      `SELECT o.data_entrada, o.id_piquete, pq.nome, pq.capacidade_max
+         FROM ocupa o JOIN piquete pq ON pq.id_piquete = o.id_piquete
+        WHERE o.brinco = $1 AND o.data_saida = $2
+        ORDER BY o.data_entrada DESC LIMIT 1`,
+      [baixa.brinco, baixa.data_baixa]
+    );
+    const ultima = ocupacao.rows[0];
+    let piquete: string | null = null;
+    let semVaga: string | null = null;
+    if (ultima) {
+      // Trava o piquete (a mesma trava da entrada) para ninguem ocupar a vaga ao mesmo tempo.
+      await client.query('SELECT 1 FROM piquete WHERE id_piquete = $1 FOR UPDATE', [ultima.id_piquete]);
+      const lotacao = await client.query<{ n: number }>(
+        'SELECT count(*)::int AS n FROM ocupa WHERE id_piquete = $1 AND data_saida IS NULL', [ultima.id_piquete]);
+      if (lotacao.rows[0].n >= ultima.capacidade_max) {
+        semVaga = ultima.nome;
+      } else {
+        await client.query(
+          'UPDATE ocupa SET data_saida = NULL WHERE brinco = $1 AND data_entrada = $2',
+          [baixa.brinco, ultima.data_entrada]
+        );
+        piquete = ultima.nome;
+      }
+    }
+    return { brinco: baixa.brinco, motivo: baixa.motivo, piquete, semVaga };
+  });
+
+    const desfeito = resultado.motivo === 'VENDA' ? 'Venda desfeita' : 'Óbito desfeito';
+  const onde = resultado.piquete
+    ? ` e ao piquete ${resultado.piquete}.`
+    : resultado.semVaga
+      ? `, mas o piquete ${resultado.semVaga} está lotado: o animal ficou sem piquete. Use Movimentações para colocá-lo em um.`
+      : '.';
+  res.json({ mensagem: `${desfeito}: o animal ${resultado.brinco} voltou ao rebanho${onde}` });
 });

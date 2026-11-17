@@ -16,6 +16,9 @@ import { consultasRouter } from './routes/consultas.js';
 import { gtaRouter } from './routes/gta.js';
 import { sistemaRouter } from './routes/sistema.js';
 import { baixasRouter } from './routes/baixas.js';
+import { pesagensRouter } from './routes/pesagens.js';
+import { aplicacoesRouter } from './routes/aplicacoes.js';
+import { movimentacoesRouter } from './routes/movimentacoes.js';
 
 const app = express();
 
@@ -73,6 +76,9 @@ app.use('/api/produtos', produtosRouter);
 app.use('/api/usuarios', usuariosRouter);
 app.use('/api/consultas', consultasRouter);
 app.use('/api/baixas', baixasRouter);
+app.use('/api/pesagens', pesagensRouter);
+app.use('/api/aplicacoes', aplicacoesRouter);
+app.use('/api/movimentacoes', movimentacoesRouter);
 
 // Tratamento de erros: sempre por ultimo
 app.use(tratarErros);
