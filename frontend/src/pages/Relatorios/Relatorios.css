@@ -59,3 +59,7 @@
   .consulta-totais > div, .rastreio-resumo { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .painel-lotacao, .lotacao { break-inside: avoid; }
 }
+
+.abas + [role="tabpanel"].content-card,
+.abas + [role="tabpanel"] > .content-card,
+.abas + [role="tabpanel"] > .compra > .content-card:first-child { border-top-left-radius: 0; }
