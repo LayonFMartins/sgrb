@@ -15,6 +15,7 @@ import { ConfiguracoesPage } from './pages/Configuracoes/ConfiguracoesPage'
 import { VendasBaixasPage } from './pages/VendasBaixas/VendasBaixasPage'
 import { PesagensPage } from './pages/Pesagens/PesagensPage'
 import { ManejoSanitarioPage } from './pages/ManejoSanitario/ManejoSanitarioPage'
+import { MovimentacoesPage } from './pages/Movimentacoes/MovimentacoesPage'
 
 interface NavigationItemBase {
   path: string
@@ -38,7 +39,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
     { path: '/pesagens', label: 'Pesagens', icon: Weight, permissao: 'pesagens.visualizar', pagina: PesagensPage },
     { path: '/manejo-sanitario', label: 'Manejo sanitário', icon: Syringe, permissao: 'aplicacoes.visualizar', pagina: ManejoSanitarioPage },
     { path: '/piquetes', label: 'Piquetes', icon: Map, permissao: 'piquetes.visualizar', pagina: PiquetesPage },
-    { path: '/movimentacoes', label: 'Movimentações', icon: ArrowLeftRight, futuro: true },
+    { path: '/movimentacoes', label: 'Movimentações', icon: ArrowLeftRight, permissao: 'movimentacoes.visualizar', pagina: MovimentacoesPage },
   ] },
   { id: 'operacoes', label: 'Operações', items: [
     { path: '/compras', label: 'Compras', icon: ShoppingCart, permissao: 'compras.criar', pagina: ComprasPage },
