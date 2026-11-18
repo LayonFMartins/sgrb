@@ -14,6 +14,7 @@ import { GtaPage } from './pages/Gta/GtaPage'
 import { ConfiguracoesPage } from './pages/Configuracoes/ConfiguracoesPage'
 import { VendasBaixasPage } from './pages/VendasBaixas/VendasBaixasPage'
 import { PesagensPage } from './pages/Pesagens/PesagensPage'
+import { ManejoSanitarioPage } from './pages/ManejoSanitario/ManejoSanitarioPage'
 
 interface NavigationItemBase {
   path: string
@@ -35,7 +36,7 @@ export const navigationGroups: { id: string; label: string; items: NavigationIte
   { id: 'gestao-rebanho', label: 'Gestão do rebanho', items: [
     { path: '/animais', label: 'Animais', icon: 'boi', permissao: 'animais.visualizar', pagina: AnimaisPage },
     { path: '/pesagens', label: 'Pesagens', icon: Weight, permissao: 'pesagens.visualizar', pagina: PesagensPage },
-    { path: '/manejo-sanitario', label: 'Manejo sanitário', icon: Syringe, futuro: true },
+    { path: '/manejo-sanitario', label: 'Manejo sanitário', icon: Syringe, permissao: 'aplicacoes.visualizar', pagina: ManejoSanitarioPage },
     { path: '/piquetes', label: 'Piquetes', icon: Map, permissao: 'piquetes.visualizar', pagina: PiquetesPage },
     { path: '/movimentacoes', label: 'Movimentações', icon: ArrowLeftRight, futuro: true },
   ] },
