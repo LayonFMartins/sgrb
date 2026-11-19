@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { usePermissions } from '../../auth/permissions'
 import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { CampoBusca } from '../../components/cadastro/CampoBusca'
@@ -15,6 +16,10 @@ import type { AplicacaoRegistro } from '../../types/manejos'
 import { combina } from '../../utils/busca'
 import { formatarData, plural } from '../../utils/formatar'
 import { FormAplicacao, type CabecalhoAplicacao } from './FormAplicacao'
+import { AvisoErro } from '../../components/cadastro/FormularioCadastro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { useAcaoLinha } from '../../hooks/useFormulario'
+import { enviar } from '../../utils/enviar'
 import '../../components/cadastro/Cadastro.css'
 import '../Compras/Compras.css'
 import '../Relatorios/Relatorios.css'
@@ -88,7 +93,8 @@ export function ManejoSanitarioPage() {
     </div>
 
     <div id="painel-sanitario" role="tabpanel" aria-labelledby={`aba-${aba}`}>
-      {aba === 'historico' && <ListaAplicacoes aplicacoes={aplicacoes} onRegistrar={() => setAba('registrar')} />}
+      {aba === 'historico' && <ListaAplicacoes aplicacoes={aplicacoes} onRegistrar={() => setAba('registrar')} onExcluida={depoisDeRegistrar}
+        ativos={new Set((animais.dados ?? []).map(a => a.brinco))} />}
 
       {aba === 'registrar' && <EstadoDados
         carregando={animais.carregando || produtos.carregando || usuarios.carregando}
@@ -103,13 +109,44 @@ export function ManejoSanitarioPage() {
   </>
 }
 
-function ListaAplicacoes({ aplicacoes, onRegistrar }: {
+// ativos: só animais do rebanho podem ter o histórico corrigido (vendidos e mortos ficam como estão).
+function ListaAplicacoes({ aplicacoes, onRegistrar, onExcluida, ativos }: {
   aplicacoes: ReturnType<typeof useDados<AplicacaoRegistro[]>>
   onRegistrar: () => void
+  onExcluida: (mensagem: string) => void
+  ativos: Set<string>
 }) {
   const { dados, ...estado } = aplicacoes
   const [busca, setBusca] = useParametro('busca')
   const hoje = new Date().toLocaleDateString('sv-SE')
+  const { pode } = usePermissions()
+  const confirmar = useConfirmacao()
+  const linha = useAcaoLinha()
+
+  // Só a dose mais recente de cada produto em cada animal pode ser excluída (senão a contagem
+  // 1ª, 2ª dose fica errada). A lista vem da mais recente para a mais antiga.
+  const ultimasDoses = new Set<string>()
+  const vistos = new Set<string>()
+  for (const a of dados ?? []) {
+    const chave = `${a.brinco}|${a.id_produto}`
+    if (!vistos.has(chave)) { vistos.add(chave); ultimasDoses.add(`${chave}|${a.data_aplicacao}`) }
+  }
+
+  async function excluir(a: AplicacaoRegistro) {
+    if (!(await confirmar({ titulo: `Excluir a aplicação no animal ${a.brinco}?`, confirmar: 'Excluir', perigo: true,
+      mensagem: `${a.produto} (${a.num_dose}ª dose) em ${formatarData(a.data_aplicacao)}, lote ${a.lote_medicamento}. A carência e o próximo reforço serão recalculados.` }))) return
+    let mensagem = ''
+    linha.executar(async () => {
+      mensagem = (await enviar<{ mensagem: string }>(
+        `/aplicacoes/${encodeURIComponent(a.brinco)}/${a.id_produto}/${a.data_aplicacao.slice(0, 10)}`, 'DELETE')).mensagem
+    }, () => onExcluida(mensagem))
+  }
+  const colunas = colunasDoHistorico(hoje)
+  if (pode('aplicacoes.excluir')) colunas.push({ titulo: 'Ações', alinhar: 'direita',
+    valor: a => ativos.has(a.brinco) && ultimasDoses.has(`${a.brinco}|${a.id_produto}|${a.data_aplicacao}`)
+      ? <button type="button" className="acao-linha acao-linha--perigo" disabled={linha.ocupado} onClick={() => excluir(a)}
+        aria-label={`Excluir a aplicação de ${a.produto} em ${a.brinco}`}><Trash2 size={14} aria-hidden="true" />Excluir</button>
+      : <span className="texto-secundario" title="Exclua antes a dose mais recente deste produto">—</span> })
 
   const todas = dados ?? []
   const visiveis = todas.filter(a =>
@@ -123,8 +160,9 @@ function ListaAplicacoes({ aplicacoes, onRegistrar }: {
       {plural(visiveis.length, 'aplicação', 'aplicações')}
       {todas.length >= LIMITE_LISTA && ` · mostrando as ${LIMITE_LISTA} mais recentes; a ficha do animal tem o histórico completo`}
     </p>}
+    <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
     <EstadoDados {...estado}>
-      {dados && <Tabela legenda="Histórico de aplicações" colunas={colunasDoHistorico(hoje)} linhas={visiveis}
+      {dados && <Tabela legenda="Histórico de aplicações" colunas={colunas} linhas={visiveis}
         chave={a => `${a.brinco}|${a.id_produto}|${a.data_aplicacao}`}
         vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')} titulo="Nenhuma aplicação registrada"
           texto="As vacinas e os tratamentos aparecem aqui depois de registrados."

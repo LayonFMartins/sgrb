@@ -19,6 +19,8 @@ interface Item {
 
 // Peso que difere mais que isto do último peso recebe um aviso (não bloqueia).
 const VARIACAO_SUSPEITA = 0.3
+const pesoSuspeito = (peso: number, ultimo: number | null) =>
+  peso > 0 && ultimo !== null && Math.abs(peso - ultimo) / ultimo > VARIACAO_SUSPEITA
 
 // Pesagem no curral: uma data e um responsável para vários animais, cada um com o seu peso.
 // A data e o responsável ficam na página (props) para continuarem preenchidos
@@ -62,8 +64,12 @@ export function FormPesagem({ animais, usuarios, data, onData, responsavel, onRe
     const problema = validar()
     setErro(problema)
     if (problema) return
-    if (!(await confirmar({ titulo: 'Registrar pesagem?', confirmar: 'Registrar',
-      mensagem: `${plural(itens.length, 'pesagem', 'pesagens')} em ${formatarData(data)}. Depois de registradas, as pesagens não podem ser desfeitas pela tela.` }))) return
+    // Pesos muito diferentes do último quase sempre são erro de digitação: repete o aviso na confirmação.
+    const suspeitos = itens.filter(i => pesoSuspeito(Number(i.peso), i.animal.ultimo_peso_kg))
+    const aviso = suspeitos.length === 0 ? ''
+      : ` Atenção, confira: ${suspeitos.map(i => `${i.animal.brinco} com ${formatarPeso(Number(i.peso))} (último: ${formatarPeso(i.animal.ultimo_peso_kg)})`).join('; ')}.`
+    if (!(await confirmar({ titulo: suspeitos.length ? 'Registrar mesmo assim?' : 'Registrar pesagem?', confirmar: 'Registrar',
+      mensagem: `${plural(itens.length, 'pesagem', 'pesagens')} em ${formatarData(data)}.${aviso}` }))) return
 
     setSalvando(true)
     try {
@@ -105,7 +111,7 @@ export function FormPesagem({ animais, usuarios, data, onData, responsavel, onRe
         const b = i.animal.brinco
         const peso = Number(i.peso)
         const ultimo = i.animal.ultimo_peso_kg
-        const suspeito = peso > 0 && ultimo !== null && Math.abs(peso - ultimo) / ultimo > VARIACAO_SUSPEITA
+        const suspeito = pesoSuspeito(peso, ultimo)
         return <fieldset key={b} className="pesagem-animal">
           <legend className="sr-only">Animal {b}</legend>
           <div className="pesagem-animal__info">

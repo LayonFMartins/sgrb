@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { emTransacao } from '../db/transacao.js';
-import { numeroObrigatorio, numeroOpcional, textoObrigatorio } from '../db/campos.js';
+import { idDaRota, numeroObrigatorio, numeroOpcional, textoObrigatorio } from '../db/campos.js';
 import {
-  dataBr, dataObrigatoria, exigirAnimaisExistentes, exigirDataNaoFutura, exigirResponsavel, listaDeBrincos,
+  dataBr, dataDaRota, dataObrigatoria, exigirAnimaisExistentes, exigirAnimalNoRebanho, exigirDataNaoFutura, exigirResponsavel, listaDeBrincos,
 } from '../db/manejos.js';
 import { ErroHttp } from '../middleware/erros.js';
 import { exigirPermissao } from '../middleware/auth.js';
@@ -115,4 +115,35 @@ aplicacoesRouter.post('/', exigirPermissao('aplicacoes.criar'), async (req, res)
     mensagem: `Aplicação registrada: ${resultado.nome} em ${brincos.length === 1
       ? `o animal ${brincos[0]}` : `${brincos.length} animais`}.${carencia}`,
   });
+});
+
+// DELETE /api/aplicacoes/:brinco/:id_produto/:data -> corrige uma aplicação lançada errado (só o proprietário).
+// Só a dose mais recente daquele produto no animal pode sair: se a 1ª dose fosse apagada
+// com a 2ª ainda registrada, a contagem de doses (num_dose) ficaria errada.
+aplicacoesRouter.delete('/:brinco/:produto/:data', exigirPermissao('aplicacoes.excluir'), async (req, res) => {
+  const brinco = String(req.params.brinco);
+  const idProduto = idDaRota(req.params.produto, 'Aplicação não encontrada.');
+  const data = dataDaRota(req.params.data, 'Aplicação não encontrada.');
+  const resultado = await emTransacao(async (client) => {
+    await exigirAnimalNoRebanho(client, brinco);
+    const { rows } = await client.query<{ nome: string; num_dose: number }>(
+      `SELECT ps.nome, r.num_dose FROM recebe r JOIN produto_sanitario ps ON ps.id_produto = r.id_produto
+        WHERE r.brinco = $1 AND r.id_produto = $2 AND r.data_aplicacao = $3 FOR UPDATE OF r`,
+      [brinco, idProduto, data]);
+    const aplicacao = rows[0];
+    if (!aplicacao) throw new ErroHttp(404, 'Aplicação não encontrada.');
+
+    const depois = await client.query<{ data_aplicacao: string }>(
+      `SELECT data_aplicacao FROM recebe WHERE brinco = $1 AND id_produto = $2 AND data_aplicacao > $3
+        ORDER BY data_aplicacao DESC LIMIT 1`, [brinco, idProduto, data]);
+    if (depois.rows[0]) {
+      throw new ErroHttp(409,
+        `O animal ${brinco} recebeu ${aplicacao.nome} de novo em ${dataBr(depois.rows[0].data_aplicacao)}. ` +
+        'Exclua primeiro a dose mais recente, senão a contagem das doses fica errada.');
+    }
+    await client.query('DELETE FROM recebe WHERE brinco = $1 AND id_produto = $2 AND data_aplicacao = $3',
+      [brinco, idProduto, data]);
+    return aplicacao;
+  });
+  res.json({ mensagem: `Aplicação de ${resultado.nome} (${resultado.num_dose}ª dose) no animal ${brinco} em ${dataBr(data)} excluída.` });
 });

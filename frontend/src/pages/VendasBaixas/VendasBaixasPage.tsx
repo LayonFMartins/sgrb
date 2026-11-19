@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Undo2 } from 'lucide-react'
 import { usePermissions } from '../../auth/permissions'
 import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { CampoBusca } from '../../components/cadastro/CampoBusca'
@@ -16,6 +17,10 @@ import type { Carencia } from '../../types/consultas'
 import { combina } from '../../utils/busca'
 import { formatarData, formatarNumero, formatarPeso, plural } from '../../utils/formatar'
 import { FormObito } from './FormObito'
+import { AvisoErro } from '../../components/cadastro/FormularioCadastro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { useAcaoLinha } from '../../hooks/useFormulario'
+import { enviar } from '../../utils/enviar'
 import { FormVenda, type VendaRegistrada } from './FormVenda'
 import '../../components/cadastro/Cadastro.css'
 import '../Compras/Compras.css'
@@ -84,7 +89,7 @@ export function VendasBaixasPage() {
     </div>
 
     <div id="painel-vendas" role="tabpanel" aria-labelledby={`aba-${aba}`}>
-      {aba === 'saidas' && <ListaSaidas saidas={saidas} onRegistrarVenda={() => setAba('venda')} />}
+      {aba === 'saidas' && <ListaSaidas saidas={saidas} onRegistrarVenda={() => setAba('venda')} onDesfeita={depoisDeRegistrar} />}
 
       {aba === 'venda' && <>
         {registrada && <section className="content-card compra-registrada" aria-label="Última venda registrada">
@@ -123,11 +128,29 @@ const colunas: Coluna<Saida>[] = [
     : '—', csv: s => s.numero_gta },
 ]
 
-function ListaSaidas({ saidas, onRegistrarVenda }: {
+function ListaSaidas({ saidas, onRegistrarVenda, onDesfeita }: {
   saidas: ReturnType<typeof useDados<Saida[]>>
   onRegistrarVenda: () => void
+  onDesfeita: (mensagem: string) => void
 }) {
   const { dados, ...estado } = saidas
+  const { pode } = usePermissions()
+  const confirmar = useConfirmacao()
+  const linha = useAcaoLinha()
+
+  // Venda ou óbito lançado por engano (só o proprietário): o animal volta ao rebanho e ao piquete.
+  async function desfazer(s: Saida) {
+    const venda = s.motivo === 'VENDA'
+    if (!(await confirmar({ titulo: `Desfazer ${venda ? 'a venda' : 'o óbito'} do animal ${s.brinco}?`, confirmar: 'Desfazer', perigo: true,
+      mensagem: `O animal volta ao rebanho e ao piquete em que estava.${venda && s.numero_gta ? ` Ele sai da GTA ${s.numero_gta} (a GTA é apagada se ficar sem animais).` : ''}` }))) return
+    let mensagem = ''
+    linha.executar(async () => {
+      mensagem = (await enviar<{ mensagem: string }>(`/baixas/${s.id_baixa}`, 'DELETE')).mensagem
+    }, () => onDesfeita(mensagem))
+  }
+  const colunasComAcao: Coluna<Saida>[] = pode('baixas.desfazer') ? [...colunas, { titulo: 'Ações', alinhar: 'direita',
+    valor: s => <button type="button" className="acao-linha acao-linha--perigo" disabled={linha.ocupado} onClick={() => desfazer(s)}
+      aria-label={`Desfazer a saída do animal ${s.brinco}`}><Undo2 size={14} aria-hidden="true" />Desfazer</button> }] : colunas
   const [filtroPedido, setFiltro] = useParametro('motivo', 'TODAS')
   const filtro = (FILTROS.some(f => f.id === filtroPedido) ? filtroPedido : 'TODAS') as Filtro
   const [busca, setBusca] = useParametro('busca')
@@ -153,8 +176,9 @@ function ListaSaidas({ saidas, onRegistrarVenda }: {
       <span>receita <strong>{real(receita)}</strong></span>
       <span>média <strong>{real(receita / vendas.length)}</strong> por animal</span>
     </p>}
+    <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
     <EstadoDados {...estado}>
-      {dados && <Tabela legenda="Saídas registradas" colunas={colunas} linhas={visiveis} chave={s => String(s.id_baixa)}
+      {dados && <Tabela legenda="Saídas registradas" colunas={colunasComAcao} linhas={visiveis} chave={s => String(s.id_baixa)}
         vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')} titulo="Nenhuma saída registrada"
           texto="As vendas e os óbitos aparecem aqui depois de registrados."
           acao={{ rotulo: 'Registrar venda', permissao: 'vendas.criar', onClick: onRegistrarVenda }} />} />}

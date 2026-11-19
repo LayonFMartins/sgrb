@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { usePermissions } from '../../auth/permissions'
 import { LinkAnimal } from '../../components/animais/LinkAnimal'
 import { CampoBusca } from '../../components/cadastro/CampoBusca'
@@ -15,6 +16,10 @@ import type { PesagemRegistro } from '../../types/manejos'
 import { combina } from '../../utils/busca'
 import { formatarData, formatarNumero, formatarPeso, plural } from '../../utils/formatar'
 import { FormPesagem } from './FormPesagem'
+import { AvisoErro } from '../../components/cadastro/FormularioCadastro'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { useAcaoLinha } from '../../hooks/useFormulario'
+import { enviar } from '../../utils/enviar'
 import '../../components/cadastro/Cadastro.css'
 import '../Compras/Compras.css'
 import '../Relatorios/Relatorios.css'
@@ -82,7 +87,8 @@ export function PesagensPage() {
     </div>
 
     <div id="painel-pesagens" role="tabpanel" aria-labelledby={`aba-${aba}`}>
-      {aba === 'historico' && <ListaPesagens pesagens={pesagens} onRegistrar={() => setAba('registrar')} />}
+      {aba === 'historico' && <ListaPesagens pesagens={pesagens} onRegistrar={() => setAba('registrar')} onExcluida={depoisDeRegistrar}
+        ativos={new Set((animais.dados ?? []).map(a => a.brinco))} />}
 
       {aba === 'registrar' && <EstadoDados carregando={animais.carregando || usuarios.carregando}
         erro={animais.erro || usuarios.erro}
@@ -96,11 +102,32 @@ export function PesagensPage() {
   </>
 }
 
-function ListaPesagens({ pesagens, onRegistrar }: {
+// ativos: só animais do rebanho podem ter o histórico corrigido (vendidos e mortos ficam como estão).
+function ListaPesagens({ pesagens, onRegistrar, onExcluida, ativos }: {
   pesagens: ReturnType<typeof useDados<PesagemRegistro[]>>
   onRegistrar: () => void
+  onExcluida: (mensagem: string) => void
+  ativos: Set<string>
 }) {
   const { dados, ...estado } = pesagens
+  const { pode } = usePermissions()
+  const confirmar = useConfirmacao()
+  const linha = useAcaoLinha()
+
+  // Corrigir pesagem lançada errado (só o proprietário). O GMD das seguintes é recalculado pelo banco.
+  async function excluir(p: PesagemRegistro) {
+    if (!(await confirmar({ titulo: `Excluir a pesagem do animal ${p.brinco}?`, confirmar: 'Excluir', perigo: true,
+      mensagem: `${formatarPeso(p.peso_kg)} em ${formatarData(p.data_pesagem)}. O ganho de peso (GMD) da pesagem seguinte será recalculado.` }))) return
+    let mensagem = ''
+    linha.executar(async () => {
+      mensagem = (await enviar<{ mensagem: string }>(`/pesagens/${encodeURIComponent(p.brinco)}/${p.data_pesagem.slice(0, 10)}`, 'DELETE')).mensagem
+    }, () => onExcluida(mensagem))
+  }
+  const colunasComAcao: Coluna<PesagemRegistro>[] = pode('pesagens.excluir') ? [...colunas, { titulo: 'Ações', alinhar: 'direita',
+    valor: p => !ativos.has(p.brinco) ? <span className="texto-secundario" title="Animal fora do rebanho">—</span>
+      : <button type="button" className="acao-linha acao-linha--perigo" disabled={linha.ocupado}
+      onClick={() => excluir(p)} aria-label={`Excluir a pesagem de ${p.brinco} em ${formatarData(p.data_pesagem)}`}>
+      <Trash2 size={14} aria-hidden="true" />Excluir</button> }] : colunas
   const [busca, setBusca] = useParametro('busca')
 
   const todas = dados ?? []
@@ -114,8 +141,9 @@ function ListaPesagens({ pesagens, onRegistrar }: {
       {plural(visiveis.length, 'pesagem', 'pesagens')}
       {todas.length >= LIMITE_LISTA && ` · mostrando as ${LIMITE_LISTA} mais recentes; a ficha do animal tem o histórico completo`}
     </p>}
+    <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
     <EstadoDados {...estado}>
-      {dados && <Tabela legenda="Histórico de pesagens" colunas={colunas} linhas={visiveis}
+      {dados && <Tabela legenda="Histórico de pesagens" colunas={colunasComAcao} linhas={visiveis}
         chave={p => `${p.brinco}|${p.data_pesagem}`}
         vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')} titulo="Nenhuma pesagem registrada"
           texto="As pesagens aparecem aqui depois de registradas."
