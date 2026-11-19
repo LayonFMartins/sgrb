@@ -83,7 +83,6 @@ export function AppLayout() {
           </section>
         })}
       </nav>
-      <p className="sidebar-footer">Itens esmaecidos: em preparação.</p>
     </aside>
     {/* Fundo escurecido atrás do menu do celular; tocar nele fecha o menu */}
     {aberto && <div className="menu-fundo" aria-hidden="true" onClick={fecharMenu} />}
