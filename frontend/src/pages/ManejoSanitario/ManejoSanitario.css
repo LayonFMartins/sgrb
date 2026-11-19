@@ -11,3 +11,8 @@
 /* "Adicionar todos de um piquete": escolha do piquete + botão */
 .aplicacao-piquete { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 16px; padding-bottom: 4px; border-bottom: 1px solid var(--divider); }
 .aplicacao-piquete .field { flex: 1 1 240px; }
+
+/* Aviso "X animais precisam deste produto" com o botão para adicionar todos */
+.aplicacao-pendentes { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 14px 16px; border: 1px solid var(--alert-warn-border); border-radius: var(--radius-control); background: var(--alert-warn-bg); }
+.aplicacao-pendentes > div { display: grid; gap: 4px; flex: 1 1 260px; font-size: 14px; }
+.aplicacao-pendentes .texto-secundario { font-size: 13px; line-height: 1.5; }

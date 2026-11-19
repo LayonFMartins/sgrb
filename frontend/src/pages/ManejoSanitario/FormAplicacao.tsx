@@ -6,6 +6,9 @@ import { SelecaoResponsavel } from '../../components/manejos/SelecaoResponsavel'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { useDados } from '../../hooks/useDados'
+import type { Campanha, Reforco } from '../../types/consultas'
+import { idade } from '../Animais/animal'
 import type { Animal } from '../../types/animais'
 import type { ProdutoSanitario, TipoProduto, UsuarioCadastro } from '../../types/cadastros'
 import { enviar, mensagemDeErro } from '../../utils/enviar'
@@ -63,6 +66,29 @@ export function FormAplicacao({ animais, produtos, usuarios, valores, onAlterar,
   const [erro, setErro] = useState('')
 
   const produto = produtos.find(p => String(p.id_produto) === valores.produto)
+
+  // Quem está devendo este produto: reforço vencido até a data da aplicação ou vacinação de campanha
+  // pendente (as mesmas contas dos relatórios "Reforços" e "Campanhas", feitas pelas views do banco).
+  const reforcos = useDados<Reforco[]>('/consultas/reforcos')
+  const campanhas = useDados<Campanha[]>('/consultas/campanhas')
+  const motivoPendente = new Map<string, string>()
+  if (produto) {
+    for (const r of reforcos.dados ?? []) {
+      if (r.produto === produto.nome && valores.data && r.data_proxima_dose.slice(0, 10) <= valores.data) {
+        motivoPendente.set(r.brinco, r.dias_atraso > 0 ? `reforço atrasado ${plural(r.dias_atraso, 'dia', 'dias')}` : 'reforço vence até a data')
+      }
+    }
+    for (const c of campanhas.dados ?? []) {
+      if (c.produto === produto.nome && !motivoPendente.has(c.brinco)) motivoPendente.set(c.brinco, `campanha: vacinar até ${formatarData(c.prazo_final)}`)
+    }
+  }
+  const pendentes = animais.filter(a => motivoPendente.has(a.brinco) && !escolhidos.some(e => e.brinco === a.brinco))
+  const pendentesEscolhidos = escolhidos.filter(a => motivoPendente.has(a.brinco)).length
+
+  function adicionarPendentes() {
+    setEscolhidos(lista => [...lista, ...pendentes])
+    setErro('')
+  }
   const liberacao = produto && produto.carencia_dias > 0 && valores.data
     ? somarDias(valores.data, produto.carencia_dias) : null
 
@@ -106,7 +132,7 @@ export function FormAplicacao({ animais, produtos, usuarios, valores, onAlterar,
     if (problema || !produto) return
     const carencia = liberacao ? ` Carência de ${produto.carencia_dias} dia(s): os animais não poderão ser vendidos para abate até ${formatarData(liberacao)}.` : ''
     if (!(await confirmar({ titulo: 'Registrar aplicação?', confirmar: 'Registrar',
-      mensagem: `${produto.nome} em ${plural(escolhidos.length, 'animal', 'animais')}, em ${formatarData(valores.data)}.${carencia} Depois de registrada, a aplicação não pode ser desfeita pela tela.` }))) return
+      mensagem: `${produto.nome} em ${plural(escolhidos.length, 'animal', 'animais')}, em ${formatarData(valores.data)}.${carencia} Se precisar corrigir, o proprietário pode excluí-la no histórico.` }))) return
 
     setSalvando(true)
     try {
@@ -158,6 +184,21 @@ export function FormAplicacao({ animais, produtos, usuarios, valores, onAlterar,
         <span className="texto-secundario">{plural(escolhidos.length, 'animal', 'animais')}</span>
       </div>
 
+      {produto && pendentes.length > 0 && <div className="aplicacao-pendentes" role="status">
+        <div>
+          <strong>{plural(pendentes.length, 'animal precisa', 'animais precisam')} de {produto.nome}</strong>
+          <span className="texto-secundario">
+            {pendentes.slice(0, 6).map(a => `${a.brinco} (${motivoPendente.get(a.brinco)})`).join(' · ')}
+            {pendentes.length > 6 && ` · e mais ${pendentes.length - 6}`}
+          </span>
+        </div>
+        <button type="button" className="botao-secundario" onClick={adicionarPendentes}>
+          Adicionar {pendentes.length === 1 ? 'o pendente' : `os ${pendentes.length} pendentes`}
+        </button>
+      </div>}
+      {produto && pendentes.length === 0 && pendentesEscolhidos === 0 && !reforcos.carregando && !campanhas.carregando &&
+        <p className="cadastro-form__dica">Nenhum animal está com dose pendente de {produto.nome} até {formatarData(valores.data)}.</p>}
+
       {piquetes.length > 0 && <div className="aplicacao-piquete">
         <Selecao label="Adicionar todos os animais de um piquete" value={piqueteEscolhido}
           onChange={e => setPiqueteEscolhido(e.target.value)}>
@@ -172,7 +213,8 @@ export function FormAplicacao({ animais, produtos, usuarios, valores, onAlterar,
       {escolhidos.map(a => <div key={a.brinco} className="aplicacao-animal">
         <div className="aplicacao-animal__info">
           <LinkAnimal brinco={a.brinco} />
-          <span className="texto-secundario">{a.categoria} · {a.raca} · {a.piquete_atual ?? 'sem piquete'} · {a.idade_meses} meses</span>
+          <span className="texto-secundario">{a.categoria} · {a.raca} · {a.piquete_atual ?? 'sem piquete'} · {idade(a.idade_meses)}</span>
+          {motivoPendente.has(a.brinco) && <span className="etiqueta etiqueta--ok">{motivoPendente.get(a.brinco)}</span>}
           {foraDoSexo(a) && <span className="etiqueta etiqueta--erro">fora do público do produto</span>}
           {!foraDoSexo(a) && foraDaIdade(a) && <span className="etiqueta etiqueta--alerta">confira a idade</span>}
         </div>

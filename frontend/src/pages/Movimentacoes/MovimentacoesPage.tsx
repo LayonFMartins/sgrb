@@ -1,3 +1,4 @@
+import { Undo2 } from 'lucide-react'
 import { useState } from 'react'
 import { usePermissions } from '../../auth/permissions'
 import { LinkAnimal } from '../../components/animais/LinkAnimal'
@@ -14,6 +15,10 @@ import type { PiqueteCadastro } from '../../types/cadastros'
 import type { MovimentacaoRegistro } from '../../types/manejos'
 import { combina } from '../../utils/busca'
 import { formatarData, plural } from '../../utils/formatar'
+import { useConfirmacao } from '../../hooks/useConfirmacao'
+import { useAcaoLinha } from '../../hooks/useFormulario'
+import { enviar } from '../../utils/enviar'
+import { AvisoErro } from '../../components/cadastro/FormularioCadastro'
 import { FormMovimentacao, type CabecalhoMovimentacao } from './FormMovimentacao'
 import '../../components/cadastro/Cadastro.css'
 import '../Compras/Compras.css'
@@ -89,7 +94,7 @@ export function MovimentacoesPage() {
     </div>
 
     <div id="painel-movimentacoes" role="tabpanel" aria-labelledby={`aba-${aba}`}>
-      {aba === 'historico' && <ListaMovimentacoes movimentacoes={movimentacoes} onRegistrar={() => setAba('registrar')} />}
+      {aba === 'historico' && <ListaMovimentacoes movimentacoes={movimentacoes} onRegistrar={() => setAba('registrar')} onDesfeita={depoisDeRegistrar} />}
 
       {aba === 'registrar' && <EstadoDados
         carregando={animais.carregando || piquetes.carregando}
@@ -104,11 +109,31 @@ export function MovimentacoesPage() {
   </>
 }
 
-function ListaMovimentacoes({ movimentacoes, onRegistrar }: {
+function ListaMovimentacoes({ movimentacoes, onRegistrar, onDesfeita }: {
   movimentacoes: ReturnType<typeof useDados<MovimentacaoRegistro[]>>
   onRegistrar: () => void
+  onDesfeita: (mensagem: string) => void
 }) {
   const { dados, ...estado } = movimentacoes
+  const { pode } = usePermissions()
+  const confirmar = useConfirmacao()
+  const linha = useAcaoLinha()
+
+  // Desfazer só a movimentação atual, e só se ela veio de outro piquete (a primeira entrada,
+  // da compra ou do nascimento, não tem para onde voltar).
+  const origemDe = (m: MovimentacaoRegistro) =>
+    (dados ?? []).find(o => o.brinco === m.brinco && o.data_saida?.slice(0, 10) === m.data_entrada.slice(0, 10))
+
+  async function desfazer(m: MovimentacaoRegistro) {
+    const origem = origemDe(m)
+    if (!(await confirmar({ titulo: `Desfazer a movimentação do animal ${m.brinco}?`, confirmar: 'Desfazer', perigo: true,
+      mensagem: `A entrada em ${m.piquete} em ${formatarData(m.data_entrada)} será apagada e o animal volta para ${origem?.piquete ?? 'o piquete anterior'}.` }))) return
+    let mensagem = ''
+    linha.executar(async () => {
+      mensagem = (await enviar<{ mensagem: string }>(
+        `/movimentacoes/${encodeURIComponent(m.brinco)}/${m.data_entrada.slice(0, 10)}`, 'DELETE')).mensagem
+    }, () => onDesfeita(mensagem))
+  }
   const [filtroPedido, setFiltro] = useParametro('mostrar', 'TODAS')
   const filtro: Filtro = filtroPedido === 'ATUAIS' ? 'ATUAIS' : 'TODAS'
   const [busca, setBusca] = useParametro('busca')
@@ -135,8 +160,14 @@ function ListaMovimentacoes({ movimentacoes, onRegistrar }: {
     {todas.length >= LIMITE_LISTA && <p className="cadastro-form__dica">
       Mostrando as {LIMITE_LISTA} movimentações mais recentes; a ficha do animal tem o histórico completo.
     </p>}
+    <AvisoErro mensagem={linha.aviso} onFechar={linha.limparAviso} />
     <EstadoDados {...estado}>
-      {dados && <Tabela legenda="Histórico de movimentações" colunas={colunasDoHistorico(hoje)} linhas={visiveis}
+      {dados && <Tabela legenda="Histórico de movimentações" linhas={visiveis}
+        colunas={pode('movimentacoes.excluir') ? [...colunasDoHistorico(hoje), { titulo: 'Ações', alinhar: 'direita',
+          valor: m => m.atual && origemDe(m)
+            ? <button type="button" className="acao-linha acao-linha--perigo" disabled={linha.ocupado} onClick={() => desfazer(m)}
+              aria-label={`Desfazer a movimentação de ${m.brinco} para ${m.piquete}`}><Undo2 size={14} aria-hidden="true" />Desfazer</button>
+            : <span className="texto-secundario">—</span> }] : colunasDoHistorico(hoje)}
         chave={m => `${m.brinco}|${m.data_entrada}`}
         vazio={<Vazio busca={busca} onLimparBusca={() => setBusca('')} titulo="Nenhuma movimentação registrada"
           texto="Quando um animal entra ou muda de piquete, o registro aparece aqui."
