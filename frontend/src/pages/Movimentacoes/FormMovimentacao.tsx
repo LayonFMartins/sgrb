@@ -77,7 +77,7 @@ export function FormMovimentacao({ animais, piquetes, valores, onAlterar, onRegi
     setErro(problema)
     if (problema || !destino) return
     if (!(await confirmar({ titulo: 'Mover animais?', confirmar: 'Mover',
-      mensagem: `${plural(escolhidos.length, 'animal', 'animais')} para o piquete ${destino.nome}, em ${formatarData(valores.data)}. Para voltar atrás, será preciso fazer outra movimentação.` }))) return
+      mensagem: `${plural(escolhidos.length, 'animal', 'animais')} para o piquete ${destino.nome}, em ${formatarData(valores.data)}. Se foi engano, o proprietário pode desfazer no histórico.` }))) return
 
     setSalvando(true)
     try {

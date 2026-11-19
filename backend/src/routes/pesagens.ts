@@ -2,7 +2,9 @@ import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { emTransacao } from '../db/transacao.js';
 import { numeroObrigatorio, textoObrigatorio } from '../db/campos.js';
-import { dataObrigatoria, exigirAnimaisExistentes, exigirDataNaoFutura, exigirResponsavel } from '../db/manejos.js';
+import {
+  dataBr, dataDaRota, dataObrigatoria, exigirAnimaisExistentes, exigirAnimalNoRebanho, exigirDataNaoFutura, exigirResponsavel,
+} from '../db/manejos.js';
 import { ErroHttp } from '../middleware/erros.js';
 import { exigirPermissao } from '../middleware/auth.js';
 
@@ -88,4 +90,19 @@ pesagensRouter.post('/', exigirPermissao('pesagens.criar'), async (req, res) => 
       ? `Pesagem registrada: animal ${itens[0].brinco} com ${itens[0].peso_kg.toLocaleString('pt-BR')} kg.`
       : `${itens.length} pesagens registradas.`,
   });
+});
+
+// DELETE /api/pesagens/:brinco/:data -> corrige uma pesagem lançada errado (só o proprietário).
+// O GMD das pesagens seguintes é recalculado sozinho pela view (vw_gmd_pesagens).
+pesagensRouter.delete('/:brinco/:data', exigirPermissao('pesagens.excluir'), async (req, res) => {
+  const brinco = String(req.params.brinco);
+  const data = dataDaRota(req.params.data, 'Pesagem não encontrada.');
+  const peso = await emTransacao(async (client) => {
+    await exigirAnimalNoRebanho(client, brinco);
+    const { rows } = await client.query<{ peso_kg: string }>(
+      'DELETE FROM pesagem WHERE brinco = $1 AND data_pesagem = $2 RETURNING peso_kg', [brinco, data]);
+    if (!rows[0]) throw new ErroHttp(404, 'Pesagem não encontrada.');
+    return Number(rows[0].peso_kg);
+  });
+  res.json({ mensagem: `Pesagem de ${peso.toLocaleString('pt-BR')} kg do animal ${brinco} em ${dataBr(data)} excluída.` });
 });

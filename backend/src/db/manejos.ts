@@ -60,3 +60,23 @@ export async function exigirResponsavel(client: PoolClient, idUsuario: number) {
   const { rowCount } = await client.query('SELECT 1 FROM usuario WHERE id_usuario = $1', [idUsuario]);
   if (!rowCount) throw new ErroHttp(404, 'Responsável não encontrado.');
 }
+
+// Data que vem na URL (/pesagens/0101/2026-05-10). Formato errado = registro inexistente.
+export function dataDaRota(valor: unknown, mensagem404: string): string {
+  const texto = String(valor ?? '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(texto)) throw new ErroHttp(404, mensagem404);
+  return texto;
+}
+
+// Excluir um lançamento só vale para animal que ainda está no rebanho:
+// o histórico de quem foi vendido ou morreu fica como estava (é o que foi para a GTA e para a rastreabilidade).
+export async function exigirAnimalNoRebanho(client: PoolClient, brinco: string) {
+  const { rows } = await client.query<{ situacao: string }>(
+    'SELECT situacao FROM vw_animal WHERE brinco = $1', [brinco]);
+  if (!rows[0]) throw new ErroHttp(404, `Animal não encontrado: ${brinco}.`);
+  if (rows[0].situacao !== 'Ativo') {
+    throw new ErroHttp(409,
+      `O animal ${brinco} já saiu do rebanho (${rows[0].situacao.toLocaleLowerCase('pt-BR')}); o histórico dele não pode mais ser alterado. ` +
+      'Se a saída foi um engano, desfaça-a primeiro em Vendas e baixas.');
+  }
+}
